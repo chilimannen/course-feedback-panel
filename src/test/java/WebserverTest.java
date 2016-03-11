@@ -37,7 +37,9 @@ public class WebserverTest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .getNow(Configuration.WEB_PORT, "localhost", "", response -> {
+                .getNow(Configuration.WEB_PORT, "localhost", "/404", response -> {
+
+                    context.assertEquals(404, response.statusCode());
 
                     response.bodyHandler(event -> {
                         JsonObject json = event.toJsonObject();
@@ -47,6 +49,17 @@ public class WebserverTest {
 
                         async.complete();
                     });
+                });
+    }
+
+    @Test
+    public void getStartPage(TestContext context) {
+        Async async = context.async();
+
+        vertx.createHttpClient()
+                .getNow(Configuration.WEB_PORT, "localhost", "/", response -> {
+                    context.assertEquals(200, response.statusCode());
+                    async.complete();
                 });
     }
 }

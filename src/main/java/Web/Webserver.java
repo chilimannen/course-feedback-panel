@@ -4,15 +4,18 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.templ.JadeTemplateEngine;
 
 /**
  * @author Robin Duda
- *
- * Sets up the routing for the admin web-interface
- * and listens for requests.
+ *         <p>
+ *         Sets up the routing for the admin web-interface
+ *         and listens for requests.
  */
 public class Webserver implements Verticle {
     private Vertx vertx;
@@ -32,14 +35,39 @@ public class Webserver implements Verticle {
         HttpServer server = vertx.createHttpServer();
         Router router = Router.router(vertx);
 
-        router.route().handler(context -> {
-            HttpServerResponse response = context.response();
-            response.putHeader("content-type", "application/json");
-            response.end("{\"page\" : 404}");
-        });
+        setTemplating(router);
+        setResources(router);
+        setCatchAll(router);
 
         server.requestHandler(router::accept).listen(Configuration.WEB_PORT);
         future.complete();
+    }
+
+    private void setTemplating(Router router) {
+        JadeTemplateEngine jade = JadeTemplateEngine.create();
+
+        router.route("/").handler(context -> {
+            jade.render(context, "templates/index", result -> {
+                if (result.succeeded())
+                    context.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html").end(result.result());
+                else
+                    context.fail(result.cause());
+            });
+        });
+    }
+
+    private void setResources(Router router) {
+        router.route("/resources/*").handler(StaticHandler.create()
+                .setCachingEnabled(true));
+    }
+
+    private void setCatchAll(Router router) {
+        router.route().handler(context -> {
+            HttpServerResponse response = context.response();
+            response.setStatusCode(404);
+            response.putHeader("content-type", "application/json");
+            response.end("{\"page\" : 404}");
+        });
     }
 
     @Override

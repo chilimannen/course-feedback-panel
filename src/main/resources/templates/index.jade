@@ -1,0 +1,17 @@
+html
+    head
+        meta(charset="utf-8")
+        script(src="resources/bower_components/webcomponentsjs/webcomponents-lite.min.js")
+        | <link rel="import" href="resources/bower_components/polymer/polymer.html">
+        | <link rel="import" href="resources/bower_components/paper-button/paper-button.html">
+        | <link rel="import" href="resources/bower_components/paper-input/paper-input.html">
+        | <!--<link rel="import" href="resources/bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+        | <style is="custom-style" include="iron-flex">-->
+        | <link rel="import" href="resources/style/style.html">
+    body
+        block content
+            paper-material(elevation="3")
+                p.header Admin panel login
+                paper-input(label="Username", placeholder="account username")
+                paper-input(label="Password", placeholder="account password", type="password")
+                paper-button(raised).fancy Login

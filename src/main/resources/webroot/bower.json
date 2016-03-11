@@ -1,0 +1,31 @@
+{
+  "name": "evote-admin-panel",
+  "homepage": "https://github.com/chilimannen/evote-admin-panel",
+  "authors": [
+    "Robin Duda <chilimannen93@yahoo.com>"
+  ],
+  "description": "Admin panel for evote.",
+  "main": "",
+  "moduleType": [],
+  "keywords": [
+    "admin",
+    "panel",
+    "evote"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.3.1",
+    "paper-button": "PolymerElements/paper-button#^1.0.11",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.3.1",
+    "paper-input": "PolymerElements/paper-input#^1.1.10",
+    "paper-material": "PolymerElements/paper-material#^1.0.6"
+  }
+}
