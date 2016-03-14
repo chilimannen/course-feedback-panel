@@ -1,5 +1,7 @@
-package Web;
+package Controller;
 
+import Model.AccountDB;
+import Model.AccountStore;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Verticle;
@@ -13,12 +15,22 @@ import io.vertx.ext.web.templ.JadeTemplateEngine;
 
 /**
  * @author Robin Duda
- *         <p>
+ *         <p/>
  *         Sets up the routing for the admin web-interface
  *         and listens for requests.
  */
 public class Webserver implements Verticle {
+    public static final int WEB_PORT = 2096;
+    private AccountStore accounts;
     private Vertx vertx;
+
+    public Webserver() {
+        accounts = new AccountDB();
+    }
+
+    public Webserver(AccountStore accounts) {
+        this.accounts = accounts;
+    }
 
     @Override
     public Vertx getVertx() {
@@ -35,11 +47,12 @@ public class Webserver implements Verticle {
         HttpServer server = vertx.createHttpServer();
         Router router = Router.router(vertx);
 
+        new APIRouter().register(router, accounts);
         setTemplating(router);
         setResources(router);
         setCatchAll(router);
 
-        server.requestHandler(router::accept).listen(Configuration.WEB_PORT);
+        server.requestHandler(router::accept).listen(WEB_PORT);
         future.complete();
     }
 

@@ -1,0 +1,104 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
+
+<dom-module id="login-box">
+    <link rel="import" href="../style/melon.css" type="css">
+    <template>
+        <style>
+            :host {
+                display: inline-block;
+            }
+
+            .title {
+                text-align: center;
+                padding-top: 16px;
+            }
+
+            paper-button {
+                margin: 0 auto auto;
+                width: 100%;
+            }
+
+            paper-input {
+                margin-left: 16px;
+                margin-right: 16px;
+            }
+
+            paper-material {
+                width: 525px;
+                background-color: #3a474c;
+            }
+
+            .register {
+                margin-top: 32px;
+            }
+        </style>
+
+        <div class="container">
+            <paper-material elevation="3">
+                <div class="title">
+                    <h4>{{title}}</h4>
+                </div>
+
+                <paper-input value="{{username}}" label="Username" autofocus></paper-input>
+                <paper-input value="{{password}}" label="Password" type="password"></paper-input>
+
+                <div hidden$="{{registerform}}">
+                    <paper-input value="{{password-repeat}}" label="Password (repeat)" type="password"></paper-input>
+                    <paper-input value="{{firstname}}" label="Firstname"></paper-input>
+                    <paper-input value="{{lastname}}" label="Lastname"></paper-input>
+                    <paper-input value="{{phone}}" label="Phone"></paper-input>
+                    <paper-input value="{{email}}" label="Email"></paper-input>
+
+                    <paper-button class="register flex" on-tap="showLoginForm">Back</paper-button>
+                    <paper-button raised class="primary flex" on-tap="register">Register</paper-button>
+                </div>
+
+                <div hidden$="{{loginform}}">
+                    <paper-button class="register flex" on-tap="showRegisterForm">Register</paper-button>
+                    <paper-button raised class="primary flex" on-tap="authenticate">Authenticate</paper-button>
+                </div>
+            </paper-material>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'login-box',
+            ready: function () {
+                this.title = "Authenticate";
+                this.showLoginForm();
+            },
+
+            authenticate: function (e) {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/authenticate"
+                });
+            },
+
+            register: function (e) {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/register"
+                });
+            },
+
+            showLoginForm: function () {
+                this.title = "Authentication";
+                this.registerform = true;
+                this.loginform = false;
+                $('#username').focus();
+            },
+
+            showRegisterForm: function () {
+                this.title = "Registration";
+                this.registerform = false;
+                this.loginform = true;
+                $('#username').focus();
+            }
+        });
+    </script>
+</dom-module>

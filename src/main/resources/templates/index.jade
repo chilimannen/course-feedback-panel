@@ -1,17 +1,20 @@
 html
     head
         meta(charset="utf-8")
-        script(src="resources/bower_components/webcomponentsjs/webcomponents-lite.min.js")
-        | <link rel="import" href="resources/bower_components/polymer/polymer.html">
-        | <link rel="import" href="resources/bower_components/paper-button/paper-button.html">
-        | <link rel="import" href="resources/bower_components/paper-input/paper-input.html">
-        | <!--<link rel="import" href="resources/bower_components/iron-flex-layout/iron-flex-layout-classes.html">
-        | <style is="custom-style" include="iron-flex">-->
+        script(src="resources/bower_components/webcomponentsjs/webcomponents.min.js")
+        script(src="resources/script/application.js")
+        script(src="resources/script/jquery-2.2.1.min.js")
+        | <link rel="import" href="resources/bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+        | <style is="custom-style" include="iron-flex iron-flex-alignment"></style>
+        | <link rel="import" href="resources/elements/loginbox.html">
+        | <link rel="import" href="resources/elements/toolbar.html">
+        | <link rel="import" href="resources/elements/footer.html">
         | <link rel="import" href="resources/style/style.html">
-    body
-        block content
-            paper-material(elevation="3")
-                p.header Admin panel login
-                paper-input(label="Username", placeholder="account username")
-                paper-input(label="Password", placeholder="account password", type="password")
-                paper-button(raised).fancy Login
+        | <link rel="import" href="resources/style/melon.html">
+
+    body.layout.vertical.layout-start
+        header-toolbar.layout.vertical.fit
+            div#login-box
+                div(style="height:16%;")
+                login-box.layout.horizontal.center-justified
+        footer-template

@@ -1,4 +1,4 @@
-import Web.Configuration;
+import Controller.Webserver;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -24,7 +24,7 @@ public class WebserverTest {
     @Before
     public void setUp(TestContext context) {
         vertx = Vertx.vertx();
-        vertx.deployVerticle(new Launcher(), context.asyncAssertSuccess());
+        vertx.deployVerticle(new Webserver(new AccountDBMock()), context.asyncAssertSuccess());
     }
 
     @After
@@ -37,7 +37,7 @@ public class WebserverTest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .getNow(Configuration.WEB_PORT, "localhost", "/404", response -> {
+                .getNow(Webserver.WEB_PORT, "localhost", "/404", response -> {
 
                     context.assertEquals(404, response.statusCode());
 
@@ -57,7 +57,18 @@ public class WebserverTest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .getNow(Configuration.WEB_PORT, "localhost", "/", response -> {
+                .getNow(Webserver.WEB_PORT, "localhost", "/", response -> {
+                    context.assertEquals(200, response.statusCode());
+                    async.complete();
+                });
+    }
+
+    @Test
+    public void getStaticResource(TestContext context) {
+        Async async = context.async();
+
+        vertx.createHttpClient()
+                .getNow(Webserver.WEB_PORT, "localhost", "/resources/bower_components/polymer/polymer.html", response -> {
                     context.assertEquals(200, response.statusCode());
                     async.complete();
                 });

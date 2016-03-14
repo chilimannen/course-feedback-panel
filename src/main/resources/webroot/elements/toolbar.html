@@ -1,0 +1,40 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<style include="iron-flex iron-flex-alignment"></style>
+
+<dom-module id="header-toolbar">
+    <link rel="import" href="../style/melon.css" type="css">
+    <template>
+        <style>
+            :host {
+                display: inline-block;
+            }
+
+            paper-toolbar {
+                background-color: #512da8;
+                text-align: center;
+            }
+        </style>
+
+        <paper-header-panel class="fit">
+            <paper-toolbar>
+                <p>
+                    E-vote command center
+                </p>
+            </paper-toolbar>
+
+            <content>
+
+            </content>
+        </paper-header-panel>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'header-toolbar'
+        });
+    </script>
+</dom-module>
+
+</style>
