@@ -1,0 +1,192 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
+
+<dom-module id="login-panel">
+    <link rel="import" href="../style/melon.css" type="css">
+    <link rel="import" href="../style/style.css" type="css">
+    <template>
+        <style>
+            :host {
+                display: inline-block;
+            }
+
+            .title {
+                text-align: center;
+                padding-top: 16px;
+            }
+
+            paper-material {
+                width: 525px;
+            }
+
+            .register {
+                margin-top: 32px;
+            }
+        </style>
+
+        <paper-dialog id="dialog-missing"
+                      entry-animation="scale-up-animation"
+                      exit-animation="fade-out-animation">
+            <h2>Authentication error</h2>
+
+            <p class="error">There is no account with the specified username..</p>
+
+            <div class="buttons">
+                <paper-button class="error" id="dialog-button" dialog-dismiss on-tap="showRegisterForm">Dismiss
+                </paper-button>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog id="dialog-unauthorized"
+                      entry-animation="scale-up-animation"
+                      exit-animation="fade-out-animation">
+            <h2>Authentication error</h2>
+
+            <p class="error">The supplied credentials did not match a valid user account.</p>
+
+            <div class="buttons">
+                <paper-button class="error" id="dialog-button" dialog-dismiss on-tap="clearPassword">Dismiss
+                </paper-button>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog id="dialog-conflict"
+                      entry-animation="scale-up-animation"
+                      exit-animation="fade-out-animation">
+            <h2>Registration error</h2>
+
+            <p class="error">There is already an user with the selected username.</p>
+
+            <div class="buttons">
+                <paper-button class="error" id="dialog-button" dialog-dismiss on-tap="showRegisterForm">Dismiss
+                </paper-button>
+            </div>
+        </paper-dialog>
+
+        <div class="container">
+            <paper-material elevation="3">
+                <div class="title">
+                    <h4>{{title}}</h4>
+                </div>
+
+                <paper-input value="{{username}}" id="username" label="Username" on-keydown="submit"
+                             autofocus></paper-input>
+                <paper-input value="{{password}}" id="password" label="Password" on-keydown="submit"
+                             type="password"></paper-input>
+
+                <div hidden$="{{hideregisterform}}">
+                    <paper-input value="{{password-repeat}}" label="Password (repeat)" type="password"
+                                 on-keydown="submit"></paper-input>
+                    <paper-input value="{{firstname}}" label="Firstname" on-keydown="submit"></paper-input>
+                    <paper-input value="{{lastname}}" label="Lastname" on-keydown="submit"></paper-input>
+                    <paper-input value="{{phone}}" label="Phone" on-keydown="submit"></paper-input>
+                    <paper-input value="{{email}}" label="Email" on-keydown="submit"></paper-input>
+
+                    <paper-button class="register flex" on-tap="showLoginForm">Back</paper-button>
+                    <paper-button raised class="primary flex" on-tap="register">Register</paper-button>
+                </div>
+
+                <div hidden$="{{hideloginform}}">
+                    <paper-button class="register flex" on-tap="showRegisterForm">Register</paper-button>
+                    <paper-button raised class="primary flex" on-tap="authenticate">Authenticate</paper-button>
+                </div>
+            </paper-material>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'login-panel',
+            ready: function () {
+                this.title = "Authenticate";
+                this.showLoginForm();
+            },
+
+            authenticate: function (e) {
+                var self = this;
+
+                $.ajax({
+                    type: "POST",
+                    url: "/api/authenticate",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        username: this.username,
+                        password: this.password
+                    }),
+                    success: function (data) {
+                        application.authenticated(data);
+                    },
+                    statusCode: {
+                        404: function () {
+                            self.$['dialog-missing'].toggle();
+                        },
+                        401: function () {
+                            self.$['dialog-unauthorized'].toggle();
+                        }
+                    }
+                });
+            },
+
+            register: function (e) {
+                var self = this;
+
+                $.ajax({
+                    type: "POST",
+                    url: "/api/register",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        username: this.username,
+                        password: this.password,
+                        firstname: this.firstname,
+                        lastname: this.lastname,
+                        phone: this.phone,
+                        email: this.email
+                    }),
+                    success: function (data) {
+                        application.authenticated(data);
+                    },
+                    statusCode: {
+                        409: function () {
+                            self.$['dialog-conflict'].toggle();
+                        }
+                    }
+                });
+            },
+
+            showLoginForm: function () {
+                this.title = "Authentication";
+                this.hideregisterform = true;
+                this.hideloginform = false;
+                this.$['username'].focus();
+            },
+
+            showRegisterForm: function () {
+                this.title = "Registration";
+                this.hideregisterform = false;
+                this.hideloginform = true;
+                this.$['username'].focus();
+            },
+
+            clearPassword: function () {
+                this.password = '';
+                this.$['password'].focus();
+            },
+
+            submit: function (e) {
+                if (e.keyCode == 13) {
+                    if (!this.hideregisterform)
+                        this.register();
+
+                    if (!this.hideloginform)
+                        this.authenticate();
+                }
+            }
+        });
+    </script>
+</dom-module>

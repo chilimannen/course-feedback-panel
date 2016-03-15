@@ -1,0 +1,174 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+
+
+<dom-module id="create-voting">
+    <link rel="import" href="../style/melon.css" type="css">
+    <link rel="import" href="../style/style.css" type="css">
+    <template>
+        <style>
+            :host {
+                display: inline-block;
+                width: 100%;
+                background-color: #2a363b;
+            }
+
+            .row {
+                margin: 6px 12px;
+                height: 64px;
+            }
+
+            .item {
+                margin: 6px 12px;
+            }
+
+            .option-title {
+                position: absolute;
+                top: 12px;
+                left: 12px;
+            }
+
+            .add {
+                position: absolute;
+                right: 16px;
+                top: 8px;
+            }
+
+            .value {
+                width: 50%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            #new-option {
+                margin-right: 64px;
+            }
+
+            .custom-values {
+                width: 200px;
+                height: 32px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .value-remove {
+                position: absolute;
+                top: 4px;
+                right: 4px;
+            }
+
+            paper-item {
+                background-color: #3a474c;
+                color: white;
+                text-align: center;
+                width: 225px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            paper-listbox {
+                background-color: #3a474c;
+                text-align: center;
+            }
+
+            .divider {
+                height: 32px;
+            }
+        </style>
+
+
+        <paper-material elevation="0" class="row">
+            <paper-input value="{{name}}" label="Vote name" on-keydown="submit"></paper-input>
+        </paper-material>
+
+        <paper-material elevation="1" class="row">
+            <paper-input value="{{option}}" label="Option name" id="new-option" on-keydown="addQueryAuto"></paper-input>
+
+            <div class="add">
+                <paper-fab mini primary icon="icons:add-box" on-click="addQuery"
+                           title="Log out"></paper-fab>
+            </div>
+        </paper-material>
+
+        <div class="divider"></div>
+
+        <template is="dom-repeat" items="{{options}}" as="option">
+            <paper-material elevation="1" class="item">
+                <div class="option-title">{{option.name}}</div>
+
+                <div class="add">
+                    <paper-fab mini primary icon="icons:remove" on-click="addQuery"
+                               title="Log out"></paper-fab>
+                </div>
+
+                <div class="value">
+                    <paper-button class="" on-tap="addValue">Add value</paper-button>
+                </div>
+
+                <paper-listbox class="value-list">
+                    <template is="dom-repeat" items="{{option.values}}" as="value" index-as="value-id">
+                        <paper-item>
+                            {{value}}
+                            <div class="value-remove">
+                                <paper-fab mini primary icon="icons:remove" on-click="addQuery"
+                                           title="Log out"></paper-fab>
+                            </div>
+                        </paper-item>
+                    </template>
+                </paper-listbox>
+
+                <div class="custom-values">
+                    <paper-checkbox noink>Allow user defined values</paper-checkbox>
+                </div>
+            </paper-material>
+        </template>
+
+       <div class="divider"></div>
+
+        <paper-button raised class="primary flex" on-tap="authenticate">Create</paper-button>
+        </paper-material>
+
+
+    </template>
+    <script>
+        Polymer({
+            is: 'create-voting',
+
+            ready: function () {
+                this.options = [{
+                    name: "opt1",
+                    values: ["1", "2", "3"]
+                }, {
+                    name: "opt2",
+                    values: ["a", "b", "c"]
+                }
+                ];
+            },
+
+            addOption: function () {
+
+            },
+
+            addQuery: function () {
+                // add the option somehow..
+                this.option = "";
+            },
+
+            addQueryAuto: function (e) {
+                if (e.keyCode == 13)
+                    this.addQuery();
+            },
+
+            removeOption: function () {
+            },
+
+            removeQuery: function () {
+            }
+        });
+    </script>
+</dom-module>

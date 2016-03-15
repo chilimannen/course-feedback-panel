@@ -1,0 +1,72 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+
+<dom-module id="account-details">
+    <link rel="import" href="../style/melon.css" type="css">
+    <link rel="import" href="../style/style.css" type="css">
+    <template>
+        <style>
+            :host {
+                display: inline-block;
+                width: 100%;
+            }
+
+            h2 {
+                text-align: center;
+            }
+
+            .details {
+                text-align: left;
+                width: 300px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .profile-image {
+                max-width: 175px;
+                margin: 24px;
+                margin-top: 6px;
+                float: left;
+            }
+        </style>
+
+        <div>
+            <paper-material elevation="0">
+                <div class="image">
+                    <img class="profile-image" src="/resources/images/profile.png">
+                </div>
+
+                <div class="details">
+                    <p>Account details for {{username}}</p>
+
+                    <p><b>Name</b> <br> {{firstname}} {{lastname}}</p>
+
+                    <p><b>Phone</b> <br> {{phone}}</p>
+
+                    <p><b>Email</b> <br> {{email}}</p>
+                </div>
+            </paper-material>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'account-details',
+
+            ready: function () {
+                var self = this;
+
+                application.onAuthentication(function (authentication) {
+                    var account = authentication.account;
+
+                    self.username = account.username;
+                    self.email = account.email;
+                    self.phone = account.phone;
+                    self.firstname = account.firstname;
+                    self.lastname = account.lastname;
+                });
+            }
+        })
+        ;
+    </script>
+</dom-module>

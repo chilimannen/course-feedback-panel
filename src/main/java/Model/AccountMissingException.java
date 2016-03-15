@@ -5,5 +5,5 @@ package Model;
  *
  * Thrown when an account is not found.
  */
-public class AuthenticationAccountMissingException extends AuthenticationException {
+public class AccountMissingException extends AccountException {
 }

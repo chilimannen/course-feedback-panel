@@ -1,5 +1,4 @@
-import Controller.Webserver;
-import Controller.WebserverStartupException;
+import Controller.WebServer;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -13,14 +12,14 @@ public class Launcher extends AbstractVerticle {
 
     public void start(Future<Void> future) {
         vertx.deployVerticle(
-                Webserver.class.getName(),
+                WebServer.class.getName(),
                 new DeploymentOptions().setInstances(Runtime.getRuntime().availableProcessors()),
 
                 result -> {
                     if (result.succeeded())
                         future.complete();
                     else
-                        future.fail(new WebserverStartupException());
+                        future.fail(result.cause());
                 });
     }
 

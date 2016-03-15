@@ -1,4 +1,5 @@
 import Model.*;
+import io.vertx.core.Future;
 
 import java.util.ArrayList;
 
@@ -7,40 +8,58 @@ import java.util.ArrayList;
  * <p/>
  * DA mock class
  */
-public class AccountDBMock implements AccountStore {
+public class AccountDBMock implements AsyncAccountStore {
     private ArrayList<Account> accounts = new ArrayList<>();
 
+    public AccountDBMock() {
+        accounts.add(new Account().setUsername("usertest").setPassword("userpass"));
+    }
+
     @Override
-    public Account find(String username) throws AuthenticationAccountMissingException {
+    public void find(String username, Future<Account> future) {
+        Account account = null;
+
         for (int i = 0; i < accounts.size(); i++) {
             if (accounts.get(i).getUsername().equals(username))
-                return accounts.get(i);
+                account = accounts.get(i);
         }
 
-        throw new AuthenticationAccountMissingException();
-    }
-
-    @Override
-    public Account authenticate(String username, String password) throws AuthenticationException {
-        Account account = find(username);
-        if (account.getPassword().equals(password))
-            return account;
+        if (account == null)
+            future.fail(new AccountMissingException());
         else
-            throw new AuthenticationPasswordMismatchException();
+            future.complete(account);
     }
 
     @Override
-    public Account register(String username, String password) throws AuthenticationExistsException {
-        try {
-            find(username);
-            throw new AuthenticationExistsException();
-        } catch (AuthenticationAccountMissingException e) {
-            Account account = new Account()
-                    .setUsername(username)
-                    .setPassword(password);
+    public void authenticate(Account account, Future<Account> future) {
+        Future<Account> findFuture = Future.future();
 
-            accounts.add(account);
-            return account;
-        }
+        findFuture.setHandler(result -> {
+            if (result.succeeded()) {
+                if (account.getPassword().equals(result.result().getPassword()))
+                    future.complete(result.result());
+                else
+                    future.fail(new AccountPasswordException());
+            } else
+                future.fail(new AccountMissingException());
+        });
+
+        find(account.getUsername(), findFuture);
+    }
+
+    @Override
+    public void register(Account account, Future<Account> future) {
+        Future<Account> findFuture = Future.future();
+
+        findFuture.setHandler(result -> {
+            if (result.succeeded()) {
+                future.fail(new AccountExistsException());
+            } else {
+                accounts.add(account);
+                future.complete(account);
+            }
+        });
+
+        find(account.getUsername(), findFuture);
     }
 }

@@ -5,5 +5,5 @@ package Model;
  *
  * Thrown when an user already exists.
  */
-public class AuthenticationExistsException extends Exception {
+public class AccountExistsException extends Exception {
 }

@@ -1,0 +1,70 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
+
+<link rel="import" href="../elements/account-details.html">
+<link rel="import" href="../elements/list-voting.html">
+<link rel="import" href="../elements/create-voting.html">
+
+
+<dom-module id="admin-panel">
+    <link rel="import" href="../style/melon.css" type="css">
+    <link rel="import" href="../style/style.css" type="css">
+    <template>
+        <style>
+            :host {
+                display: inline-block;
+            }
+
+            .container {
+                margin-top: 64px;
+                width: 675px;
+            }
+        </style>
+
+        <div class="container">
+
+            <paper-material elevation="3">
+
+                <paper-tabs selected="{{page}}" no-slide>
+                    <paper-tab>Account details</paper-tab>
+                    <paper-tab>My votings</paper-tab>
+                    <paper-tab>Create new</paper-tab>
+                </paper-tabs>
+
+                <iron-pages selected="{{page}}">
+                    <div>
+                        <paper-material elevation="0">
+                            <account-details></account-details>
+                        </paper-material>
+                    </div>
+                    <div>
+                        <paper-material elevation="0">
+                            <list-voting></list-voting>
+                        </paper-material>
+                    </div>
+                    <div>
+                        <paper-material elevation="0">
+                            <create-voting></create-voting>
+                        </paper-material>
+                    </div>
+                </iron-pages>
+
+            </paper-material>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'admin-panel',
+            ready: function () {
+                this.page = 0;
+            }
+        });
+    </script>
+</dom-module>

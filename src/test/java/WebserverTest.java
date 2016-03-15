@@ -1,4 +1,4 @@
-import Controller.Webserver;
+import Controller.WebServer;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
  * @author Robin Duda
  */
 @RunWith(VertxUnitRunner.class)
-public class WebserverTest {
+public class WebServerTest {
     private Vertx vertx;
 
     @Rule
@@ -24,7 +24,7 @@ public class WebserverTest {
     @Before
     public void setUp(TestContext context) {
         vertx = Vertx.vertx();
-        vertx.deployVerticle(new Webserver(new AccountDBMock()), context.asyncAssertSuccess());
+        vertx.deployVerticle(new WebServer(new AccountDBMock()), context.asyncAssertSuccess());
     }
 
     @After
@@ -37,7 +37,7 @@ public class WebserverTest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .getNow(Webserver.WEB_PORT, "localhost", "/404", response -> {
+                .getNow(WebServer.WEB_PORT, "localhost", "/404", response -> {
 
                     context.assertEquals(404, response.statusCode());
 
@@ -57,7 +57,7 @@ public class WebserverTest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .getNow(Webserver.WEB_PORT, "localhost", "/", response -> {
+                .getNow(WebServer.WEB_PORT, "localhost", "/", response -> {
                     context.assertEquals(200, response.statusCode());
                     async.complete();
                 });
@@ -68,7 +68,7 @@ public class WebserverTest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .getNow(Webserver.WEB_PORT, "localhost", "/resources/bower_components/polymer/polymer.html", response -> {
+                .getNow(WebServer.WEB_PORT, "localhost", "/resources/bower_components/polymer/polymer.html", response -> {
                     context.assertEquals(200, response.statusCode());
                     async.complete();
                 });

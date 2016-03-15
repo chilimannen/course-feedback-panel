@@ -5,5 +5,5 @@ package Model;
  *
  * Thrown when an authentication error has occured.
  */
-public class AuthenticationException extends Exception {
+public class AccountException extends Exception {
 }

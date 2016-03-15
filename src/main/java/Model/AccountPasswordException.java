@@ -5,5 +5,5 @@ package Model;
  *
  * Throw when authentication fails.
  */
-public class AuthenticationPasswordMismatchException extends AuthenticationException {
+public class AccountPasswordException extends AccountException {
 }

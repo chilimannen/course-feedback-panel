@@ -1,4 +1,7 @@
-import Controller.Webserver;
+import Controller.WebServer;
+import Model.Authentication;
+import Model.Serializer;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -33,7 +36,7 @@ public class APITest {
     @Before
     public void setUp(TestContext context) {
         vertx = Vertx.vertx();
-        vertx.deployVerticle(new Webserver(new AccountDBMock()), context.asyncAssertSuccess());
+        vertx.deployVerticle(new WebServer(new AccountDBMock()), context.asyncAssertSuccess());
     }
 
     @After
@@ -47,19 +50,21 @@ public class APITest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .post(Webserver.WEB_PORT, "localhost", "/api/authenticate", response -> {
-                    context.assertEquals(200, response.statusCode());
+                .post(WebServer.WEB_PORT, "localhost", "/api/authenticate", response -> {
+                    context.assertEquals(HttpResponseStatus.OK.code(), response.statusCode());
 
                     response.bodyHandler(body -> {
+                        JsonObject data = body.toJsonObject();
 
-                        System.out.println(body.toString());
+                        context.assertTrue(data.containsKey("account"));
+                        context.assertTrue(data.containsKey("token"));
 
                         async.complete();
                     });
                 }).end(
                 new JsonObject()
-                        .put("username", "usern1")
-                        .put("password", "passwordn1")
+                        .put("username", "usertest")
+                        .put("password", "userpass")
                         .encode());
     }
 
@@ -68,64 +73,91 @@ public class APITest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .getNow(Webserver.WEB_PORT, "localhost", "/", response -> {
-                    context.assertEquals(200, response.statusCode());
+                .post(WebServer.WEB_PORT, "localhost", "/api/authenticate", response -> {
+                    context.assertEquals(HttpResponseStatus.UNAUTHORIZED.code(), response.statusCode());
                     async.complete();
-                });
+                }).end(
+                new JsonObject()
+                        .put("username", "usertest")
+                        .put("password", "userpass_wrong")
+                        .encode());
+    }
+
+    @Test
+    public void testMissingAccount(TestContext context) {
+        Async async = context.async();
+
+        vertx.createHttpClient()
+                .post(WebServer.WEB_PORT, "localhost", "/api/authenticate", response -> {
+                    context.assertEquals(HttpResponseStatus.NOT_FOUND.code(), response.statusCode());
+                    async.complete();
+                }).end(
+                new JsonObject()
+                        .put("username", "userNX")
+                        .put("password", "userpass")
+                        .encode());
+    }
+
+    @Test
+    public void testAccountRegister(TestContext context) {
+        Async async = context.async();
+
+        vertx.createHttpClient()
+                .post(WebServer.WEB_PORT, "localhost", "/api/register", response -> {
+                    context.assertEquals(HttpResponseStatus.OK.code(), response.statusCode());
+
+                    response.bodyHandler(body -> {
+                        Authentication authentication = (Authentication) Serializer.unpack(body.toJsonObject(), Authentication.class);
+
+                        context.assertEquals("usertest_new", authentication.getAccount().getUsername());
+                        context.assertTrue(body.toJsonObject().containsKey("token"));
+
+                        async.complete();
+                    });
+                }).end(
+                new JsonObject()
+                        .put("username", "usertest_new")
+                        .put("password", "userpass_new")
+                        .encode());
+    }
+
+    @Test
+    public void testAccountRegisterExisting(TestContext context) {
+        Async async = context.async();
+
+        vertx.createHttpClient()
+                .post(WebServer.WEB_PORT, "localhost", "/api/register", response -> {
+                    context.assertEquals(HttpResponseStatus.CONFLICT.code(), response.statusCode());
+                    async.complete();
+                }).end(
+                new JsonObject()
+                        .put("username", "usertest")
+                        .put("password", "userpass_new")
+                        .encode());
     }
 
     @Test
     public void terminateVoting(TestContext context) {
-        Async async = context.async();
-
-        vertx.createHttpClient()
-                .getNow(Webserver.WEB_PORT, "localhost", "/", response -> {
-                    context.assertEquals(200, response.statusCode());
-                    async.complete();
-                });
+        //
     }
 
     @Test
     public void terminateNonExistingVoting(TestContext context) {
-        Async async = context.async();
-
-        vertx.createHttpClient()
-                .getNow(Webserver.WEB_PORT, "localhost", "/", response -> {
-                    context.assertEquals(200, response.statusCode());
-                    async.complete();
-                });
+        //
     }
 
     @Test
     public void createVoting(TestContext context) {
-        Async async = context.async();
-
-        vertx.createHttpClient()
-                .getNow(Webserver.WEB_PORT, "localhost", "/", response -> {
-                    context.assertEquals(200, response.statusCode());
-                    async.complete();
-                });
+        //
     }
 
     @Test
     public void createVotingNamespaceCollision(TestContext context) {
-        Async async = context.async();
-
-        vertx.createHttpClient()
-                .getNow(Webserver.WEB_PORT, "localhost", "/", response -> {
-                    context.assertEquals(200, response.statusCode());
-                    async.complete();
-                });
+        //
     }
 
     @Test
     public void listVotingInProgress(TestContext context) {
-        Async async = context.async();
-
-        vertx.createHttpClient()
-                .getNow(Webserver.WEB_PORT, "localhost", "/", response -> {
-                    context.assertEquals(200, response.statusCode());
-                    async.complete();
-                });
+        //
     }
 }

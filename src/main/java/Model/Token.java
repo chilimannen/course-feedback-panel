@@ -2,7 +2,7 @@ package Model;
 
 /**
  * Created by Robin on 2015-12-22.
- * <p>
+ * <p/>
  * Used to request authentication by token.
  */
 public class Token {
@@ -10,6 +10,14 @@ public class Token {
     private Long expiry;
     private String username;
 
+    public Token() {
+    }
+
+    public Token(String username, Long expiry) throws TokenException {
+        this.key = TokenFactory.SignToken(username, expiry);
+        this.username = username;
+        this.expiry = expiry;
+    }
 
     public String getKey() {
         return key;

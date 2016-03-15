@@ -1,7 +1,7 @@
 package Controller;
 
 import Model.AccountDB;
-import Model.AccountStore;
+import Model.AsyncAccountStore;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Verticle;
@@ -9,7 +9,10 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.templ.JadeTemplateEngine;
 
@@ -19,16 +22,15 @@ import io.vertx.ext.web.templ.JadeTemplateEngine;
  *         Sets up the routing for the admin web-interface
  *         and listens for requests.
  */
-public class Webserver implements Verticle {
-    public static final int WEB_PORT = 2096;
-    private AccountStore accounts;
+public class WebServer implements Verticle {
+    public static final int WEB_PORT = 4096;
+    private AsyncAccountStore accounts;
     private Vertx vertx;
 
-    public Webserver() {
-        accounts = new AccountDB();
+    public WebServer() {
     }
 
-    public Webserver(AccountStore accounts) {
+    public WebServer(AsyncAccountStore accounts) {
         this.accounts = accounts;
     }
 
@@ -40,6 +42,14 @@ public class Webserver implements Verticle {
     @Override
     public void init(Vertx vertx, Context context) {
         this.vertx = vertx;
+
+        if (accounts == null) {
+            accounts = new AccountDB(
+                    MongoClient.createShared(vertx,
+                            new JsonObject()
+                                    .put("connection_string", "mongodb://localhost:27017/")
+                                    .put("db_name", "accounts")));
+        }
     }
 
     @Override
@@ -47,6 +57,7 @@ public class Webserver implements Verticle {
         HttpServer server = vertx.createHttpServer();
         Router router = Router.router(vertx);
 
+        router.route().handler(BodyHandler.create());
         new APIRouter().register(router, accounts);
         setTemplating(router);
         setResources(router);
