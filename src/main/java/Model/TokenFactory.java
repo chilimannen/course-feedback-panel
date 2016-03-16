@@ -10,26 +10,30 @@ import java.time.Instant;
 /**
  * @author Robin Duda
  * <p>
- * Verifies that a token has been signed by a backend server.
+ * Verifies and generates tokens for access.
  */
 public class TokenFactory {
-    private static final byte[] SECRET = "0000000000000000000000000000000000000000000000000000000000000000".getBytes();
+    private byte[] secret;
     private static final String ALGORITHM = "HmacSHA512";
+
+    public TokenFactory(byte[] secret) {
+        this.secret = secret;
+    }
 
     /**
      * Checks if a token and its parameters is valid against the secret.
      *
      * @param token    hex encoded token to be verified.
-     * @param username the username of the requestor.
+     * @param domain   context name of the requestor.
      * @param expiry   the unix epoch time in which it is expired.
      * @return true if the token is accepted.
      */
-    public static boolean VerifyToken(String token, String username, Long expiry) {
+    public boolean verifyToken(String token, String domain, Long expiry) {
         if (expiry > Instant.now().getEpochSecond()) {
             try {
-                byte[] result = DatatypeConverter.printHexBinary(GenerateToken(username, expiry)).getBytes();
+                byte[] result = DatatypeConverter.printHexBinary(generateToken(domain, expiry)).getBytes();
 
-                return ConstantTimeCompare(result, token.toUpperCase().getBytes());
+                return constantTimeCompare(result, token.toUpperCase().getBytes());
             } catch (NoSuchAlgorithmException | InvalidKeyException ignored) {
             }
         }
@@ -39,16 +43,16 @@ public class TokenFactory {
     /**
      * @param token Containing token data.
      * @return true if the token is accepted.
-     * @see #VerifyToken(String token, String username, Long expiry)
+     * @see #verifyToken(String token, String username, Long expiry)
      */
-    public static boolean VerifyToken(Token token) {
-        return (VerifyToken(token.getKey(), token.getUsername(), token.getExpiry()));
+    public boolean verifyToken(Token token) {
+        return (verifyToken(token.getKey(), token.getDomain(), token.getExpiry()));
     }
 
-    private static byte[] GenerateToken(String username, Long expiry) throws NoSuchAlgorithmException, InvalidKeyException {
+    private byte[] generateToken(String username, Long expiry) throws NoSuchAlgorithmException, InvalidKeyException {
         Mac mac = Mac.getInstance(ALGORITHM);
 
-        SecretKeySpec key = new SecretKeySpec(SECRET, ALGORITHM);
+        SecretKeySpec key = new SecretKeySpec(secret, ALGORITHM);
         mac.init(key);
 
         mac.update(username.getBytes());
@@ -60,19 +64,19 @@ public class TokenFactory {
     /**
      * Generates a new token from a given username.. be careful..
      *
-     * @param username the token should be signed with.
+     * @param domain   the token should be signed with.
      * @param expiry   indicates when the token expires.
      * @return a signed token as a base64 string.
      */
-    public static String SignToken(String username, long expiry) throws TokenException {
+    public String signToken(String domain, long expiry) throws TokenException {
         try {
-            return DatatypeConverter.printHexBinary(GenerateToken(username, expiry));
+            return DatatypeConverter.printHexBinary(generateToken(domain, expiry));
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             throw new TokenException();
         }
     }
 
-    private static boolean ConstantTimeCompare(byte[] first, byte[] second) {
+    private boolean constantTimeCompare(byte[] first, byte[] second) {
         int result = 0;
 
         if (first.length != second.length)

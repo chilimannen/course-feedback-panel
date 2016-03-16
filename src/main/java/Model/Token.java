@@ -1,5 +1,7 @@
 package Model;
 
+import java.time.Instant;
+
 /**
  * Created by Robin on 2015-12-22.
  * <p/>
@@ -8,15 +10,19 @@ package Model;
 public class Token {
     private String key;
     private Long expiry;
-    private String username;
+    private String domain;
 
     public Token() {
     }
 
-    public Token(String username, Long expiry) throws TokenException {
-        this.key = TokenFactory.SignToken(username, expiry);
-        this.username = username;
-        this.expiry = expiry;
+    public Token(TokenFactory factory, String domain) {
+        try {
+            this.domain = domain;
+            this.expiry = Instant.now().getEpochSecond() + 900;
+            this.key = factory.signToken(domain, this.expiry);
+        } catch (Throwable e) {
+            throw new RuntimeException("Token factory failed to generate token.");
+        }
     }
 
     public String getKey() {
@@ -35,11 +41,11 @@ public class Token {
         this.expiry = expiry;
     }
 
-    public String getUsername() {
-        return username;
+    public String getDomain() {
+        return domain;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 }

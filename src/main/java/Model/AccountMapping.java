@@ -1,42 +1,44 @@
 package Model;
 
 /**
- * Created by Robin on 2016-03-16.
+ * Created by Robin on 2016-03-14.
+ * <p/>
+ * An account.
  */
-public class Account {
+class AccountMapping {
     private String username;
-    private String password;
     private String firstname;
     private String lastname;
     private String phone;
     private String email;
+    private String salt;
+    private String hash;
 
-    public Account() {
+
+    public String getSalt() {
+        return salt;
     }
 
-    public Account(AccountMapping account) {
-        this.username = account.getUsername();
-        this.firstname = account.getFirstname();
-        this.lastname = account.getLastname();
-        this.phone = account.getPhone();
-        this.email = account.getEmail();
+    public AccountMapping setSalt(String salt) {
+        this.salt = salt;
+        return this;
     }
 
     public String getUsername() {
         return username;
     }
 
-    public Account setUsername(String username) {
+    public AccountMapping setUsername(String username) {
         this.username = username;
         return this;
     }
 
-    public String getPassword() {
-        return password;
+    public String getHash() {
+        return hash;
     }
 
-    public Account setPassword(String password) {
-        this.password = password;
+    public AccountMapping setHash(String hash) {
+        this.hash = hash;
         return this;
     }
 
@@ -44,7 +46,7 @@ public class Account {
         return firstname;
     }
 
-    public Account setFirstname(String firstname) {
+    public AccountMapping setFirstname(String firstname) {
         this.firstname = firstname;
         return this;
     }
@@ -53,7 +55,7 @@ public class Account {
         return lastname;
     }
 
-    public Account setLastname(String lastname) {
+    public AccountMapping setLastname(String lastname) {
         this.lastname = lastname;
         return this;
     }
@@ -62,7 +64,7 @@ public class Account {
         return phone;
     }
 
-    public Account setPhone(String phone) {
+    public AccountMapping setPhone(String phone) {
         this.phone = phone;
         return this;
     }
@@ -71,7 +73,7 @@ public class Account {
         return email;
     }
 
-    public Account setEmail(String email) {
+    public AccountMapping setEmail(String email) {
         this.email = email;
         return this;
     }

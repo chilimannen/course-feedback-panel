@@ -8,6 +8,8 @@ var application = {
     handlers: {},
 
     authenticated: function (authentication) {
+        console.log(authentication);
+
         this.authentication = authentication;
         $('#login-panel').hide();
         $('#admin-panel').show();

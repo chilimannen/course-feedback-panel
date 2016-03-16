@@ -24,7 +24,33 @@
     </template>
     <script>
         Polymer({
-            is: 'list-voting'
+            is: 'list-voting',
+
+            ready: function () {
+                $.ajax({
+                    type: "GET",
+                    url: "/api/list",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        token: self.token
+                    }),
+                    success: function (data) {
+                        console.log(data);
+
+                        self.option = "";
+                        self.name = "";
+                        self.options = [];
+                        self.$['toast-success'].open();
+                    },
+                    error: function (data) {
+                        console.log(data);
+
+                        self.$['toast-server-denied'].open();
+                        self.password = "";
+                    }
+                });
+            }
         });
     </script>
 </dom-module>

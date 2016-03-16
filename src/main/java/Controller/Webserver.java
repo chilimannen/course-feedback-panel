@@ -1,5 +1,6 @@
 package Controller;
 
+import Configuration.Configuration;
 import Model.AccountDB;
 import Model.AsyncAccountStore;
 import io.vertx.core.Context;
@@ -23,7 +24,6 @@ import io.vertx.ext.web.templ.JadeTemplateEngine;
  *         and listens for requests.
  */
 public class WebServer implements Verticle {
-    public static final int WEB_PORT = 4096;
     private AsyncAccountStore accounts;
     private Vertx vertx;
 
@@ -47,8 +47,8 @@ public class WebServer implements Verticle {
             accounts = new AccountDB(
                     MongoClient.createShared(vertx,
                             new JsonObject()
-                                    .put("connection_string", "mongodb://localhost:27017/")
-                                    .put("db_name", "accounts")));
+                                    .put("connection_string", Configuration.CONNECTION_STRING)
+                                    .put("db_name", Configuration.DB_NAME)));
         }
     }
 
@@ -58,12 +58,12 @@ public class WebServer implements Verticle {
         Router router = Router.router(vertx);
 
         router.route().handler(BodyHandler.create());
-        new APIRouter().register(router, accounts);
+        new APIRouter().register(router, accounts, vertx);
         setTemplating(router);
         setResources(router);
         setCatchAll(router);
 
-        server.requestHandler(router::accept).listen(WEB_PORT);
+        server.requestHandler(router::accept).listen(Configuration.WEB_PORT);
         future.complete();
     }
 

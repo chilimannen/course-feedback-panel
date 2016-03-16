@@ -2,6 +2,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 
@@ -23,49 +24,16 @@
                 width: 525px;
             }
 
+            paper-toast {
+                position: absolute;
+                right: 0px;
+                bottom: -80px;
+            }
+
             .register {
                 margin-top: 32px;
             }
         </style>
-
-        <paper-dialog id="dialog-missing"
-                      entry-animation="scale-up-animation"
-                      exit-animation="fade-out-animation">
-            <h2>Authentication error</h2>
-
-            <p class="error">There is no account with the specified username..</p>
-
-            <div class="buttons">
-                <paper-button class="error" id="dialog-button" dialog-dismiss on-tap="showRegisterForm">Dismiss
-                </paper-button>
-            </div>
-        </paper-dialog>
-
-        <paper-dialog id="dialog-unauthorized"
-                      entry-animation="scale-up-animation"
-                      exit-animation="fade-out-animation">
-            <h2>Authentication error</h2>
-
-            <p class="error">The supplied credentials did not match a valid user account.</p>
-
-            <div class="buttons">
-                <paper-button class="error" id="dialog-button" dialog-dismiss on-tap="clearPassword">Dismiss
-                </paper-button>
-            </div>
-        </paper-dialog>
-
-        <paper-dialog id="dialog-conflict"
-                      entry-animation="scale-up-animation"
-                      exit-animation="fade-out-animation">
-            <h2>Registration error</h2>
-
-            <p class="error">There is already an user with the selected username.</p>
-
-            <div class="buttons">
-                <paper-button class="error" id="dialog-button" dialog-dismiss on-tap="showRegisterForm">Dismiss
-                </paper-button>
-            </div>
-        </paper-dialog>
 
         <div class="container">
             <paper-material elevation="3">
@@ -80,7 +48,7 @@
 
                 <div hidden$="{{hideregisterform}}">
                     <paper-input value="{{password-repeat}}" label="Password (repeat)" type="password"
-                                 on-keydown="submit"></paper-input>
+                                 on-keydown="submit" id="password-repeat"></paper-input>
                     <paper-input value="{{firstname}}" label="Firstname" on-keydown="submit"></paper-input>
                     <paper-input value="{{lastname}}" label="Lastname" on-keydown="submit"></paper-input>
                     <paper-input value="{{phone}}" label="Phone" on-keydown="submit"></paper-input>
@@ -94,6 +62,15 @@
                     <paper-button class="register flex" on-tap="showRegisterForm">Register</paper-button>
                     <paper-button raised class="primary flex" on-tap="authenticate">Authenticate</paper-button>
                 </div>
+
+                <paper-toast class="toast-success" id="toast-missing"
+                             text="There is no account with that username."></paper-toast>
+                <paper-toast class="toast-error" id="toast-password"
+                             text="Password authentication failed."></paper-toast>
+                <paper-toast class="toast-error" id="toast-conflict"
+                             text="The selected username is already taken."></paper-toast>
+                <paper-toast class="toast-error" id="toast-validation-failed"
+                             text="Passwords must match and be at least 9 characters."></paper-toast>
             </paper-material>
         </div>
 
@@ -123,10 +100,14 @@
                     },
                     statusCode: {
                         404: function () {
-                            self.$['dialog-missing'].toggle();
+                            self.$['toast-missing'].open();
+                            self.showRegisterForm();
+                            self.$['password-repeat'].focus();
                         },
                         401: function () {
-                            self.$['dialog-unauthorized'].toggle();
+                            self.$['toast-password'].open();
+                            self.password = "";
+                            self.$['password'].focus();
                         }
                     }
                 });
@@ -135,28 +116,32 @@
             register: function (e) {
                 var self = this;
 
-                $.ajax({
-                    type: "POST",
-                    url: "/api/register",
-                    dataType: "json",
-                    contentType: "application/json; charset=utf-8",
-                    data: JSON.stringify({
-                        username: this.username,
-                        password: this.password,
-                        firstname: this.firstname,
-                        lastname: this.lastname,
-                        phone: this.phone,
-                        email: this.email
-                    }),
-                    success: function (data) {
-                        application.authenticated(data);
-                    },
-                    statusCode: {
-                        409: function () {
-                            self.$['dialog-conflict'].toggle();
+                if (this.password != this["password-repeat"] || this.password.length < 8)
+                    self.$['toast-validation-failed'].open();
+                else
+                    $.ajax({
+                        type: "POST",
+                        url: "/api/register",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({
+                            username: this.username,
+                            password: this.password,
+                            firstname: this.firstname,
+                            lastname: this.lastname,
+                            phone: this.phone,
+                            email: this.email
+                        }),
+                        success: function (data) {
+                            application.authenticated(data);
+                        },
+                        statusCode: {
+                            409: function () {
+                                self.$['toast-conflict'].open();
+                                self.$['username'].focus();
+                            }
                         }
-                    }
-                });
+                    });
             },
 
             showLoginForm: function () {
@@ -171,11 +156,6 @@
                 this.hideregisterform = false;
                 this.hideloginform = true;
                 this.$['username'].focus();
-            },
-
-            clearPassword: function () {
-                this.password = '';
-                this.$['password'].focus();
             },
 
             submit: function (e) {

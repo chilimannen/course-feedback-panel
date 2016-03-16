@@ -1,8 +1,9 @@
+import Configuration.Configuration;
 import Controller.WebServer;
-import Model.Authentication;
-import Model.Serializer;
+import Model.*;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -13,6 +14,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.time.Instant;
 
 /**
  * @author Robin Duda
@@ -29,6 +32,7 @@ import org.junit.runner.RunWith;
 @RunWith(VertxUnitRunner.class)
 public class APITest {
     private Vertx vertx;
+    private TokenFactory tokenFactory;
 
     @Rule
     public Timeout timeout = Timeout.seconds(15);
@@ -37,6 +41,7 @@ public class APITest {
     public void setUp(TestContext context) {
         vertx = Vertx.vertx();
         vertx.deployVerticle(new WebServer(new AccountDBMock()), context.asyncAssertSuccess());
+        tokenFactory = new TokenFactory(Configuration.CLIENT_SECRET);
     }
 
     @After
@@ -50,7 +55,7 @@ public class APITest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .post(WebServer.WEB_PORT, "localhost", "/api/authenticate", response -> {
+                .post(Configuration.WEB_PORT, "localhost", "/api/authenticate", response -> {
                     context.assertEquals(HttpResponseStatus.OK.code(), response.statusCode());
 
                     response.bodyHandler(body -> {
@@ -73,7 +78,7 @@ public class APITest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .post(WebServer.WEB_PORT, "localhost", "/api/authenticate", response -> {
+                .post(Configuration.WEB_PORT, "localhost", "/api/authenticate", response -> {
                     context.assertEquals(HttpResponseStatus.UNAUTHORIZED.code(), response.statusCode());
                     async.complete();
                 }).end(
@@ -88,7 +93,7 @@ public class APITest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .post(WebServer.WEB_PORT, "localhost", "/api/authenticate", response -> {
+                .post(Configuration.WEB_PORT, "localhost", "/api/authenticate", response -> {
                     context.assertEquals(HttpResponseStatus.NOT_FOUND.code(), response.statusCode());
                     async.complete();
                 }).end(
@@ -103,7 +108,7 @@ public class APITest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .post(WebServer.WEB_PORT, "localhost", "/api/register", response -> {
+                .post(Configuration.WEB_PORT, "localhost", "/api/register", response -> {
                     context.assertEquals(HttpResponseStatus.OK.code(), response.statusCode());
 
                     response.bodyHandler(body -> {
@@ -126,7 +131,7 @@ public class APITest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .post(WebServer.WEB_PORT, "localhost", "/api/register", response -> {
+                .post(Configuration.WEB_PORT, "localhost", "/api/register", response -> {
                     context.assertEquals(HttpResponseStatus.CONFLICT.code(), response.statusCode());
                     async.complete();
                 }).end(
@@ -137,27 +142,51 @@ public class APITest {
     }
 
     @Test
-    public void terminateVoting(TestContext context) {
-        //
+    public void testInvalidTokenAccessCreate(TestContext context) {
+        Async async = context.async();
+
+        vertx.createHttpClient()
+                .post(Configuration.WEB_PORT, "localhost", "/api/create", response -> {
+                    context.assertEquals(HttpResponseStatus.UNAUTHORIZED.code(), response.statusCode());
+                    async.complete();
+                }).end(
+                new JsonObject()
+                        .put("token", getInvalidToken())
+                        .encode());
     }
 
     @Test
-    public void terminateNonExistingVoting(TestContext context) {
-        //
+    public void testInvalidTokenAccessTerminate(TestContext context) {
+        Async async = context.async();
+
+        vertx.createHttpClient()
+                .get(Configuration.WEB_PORT, "localhost", "/api/list", response -> {
+                    context.assertEquals(HttpResponseStatus.UNAUTHORIZED.code(), response.statusCode());
+                    async.complete();
+                }).end(
+                new JsonObject()
+                        .put("token", getInvalidToken())
+                        .encode());
     }
 
     @Test
-    public void createVoting(TestContext context) {
-        //
+    public void testInvalidTokenAccessList(TestContext context) {
+        Async async = context.async();
+
+        vertx.createHttpClient()
+                .post(Configuration.WEB_PORT, "localhost", "/api/terminate", response -> {
+                    context.assertEquals(HttpResponseStatus.UNAUTHORIZED.code(), response.statusCode());
+                    async.complete();
+                }).end(
+                new JsonObject()
+                        .put("token", getInvalidToken())
+                        .encode());
     }
 
-    @Test
-    public void createVotingNamespaceCollision(TestContext context) {
-        //
-    }
-
-    @Test
-    public void listVotingInProgress(TestContext context) {
-        //
+    private JsonObject getInvalidToken() {
+        return new JsonObject()
+                .put("key", "invalid")
+                .put("domain", Configuration.SERVER_NAME)
+                .put("expiry", Instant.now().getEpochSecond() + 90);
     }
 }

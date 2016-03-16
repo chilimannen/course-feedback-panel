@@ -1,10 +1,17 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 
 
 <dom-module id="create-voting">
@@ -27,6 +34,16 @@
                 margin: 6px 12px;
             }
 
+            #duration {
+                position: absolute;
+                top: 0px;
+                right: 8px;
+            }
+
+            #name {
+                width: 425px;
+            }
+
             .option-title {
                 position: absolute;
                 top: 12px;
@@ -34,6 +51,12 @@
             }
 
             .add {
+                position: absolute;
+                right: 16px;
+                top: 8px;
+            }
+
+            .remove {
                 position: absolute;
                 right: 16px;
                 top: 8px;
@@ -79,60 +102,92 @@
             .divider {
                 height: 32px;
             }
+
+            .add-value-input {
+                width: 73%;
+            }
+
+            paper-toast {
+                position: absolute;
+                right: 0px;
+                bottom: -80px;
+            }
         </style>
 
 
+        <!-- Dialog for adding new values to the option. -->
+        <paper-dialog id="dialog-value"
+                      entry-animation="scale-up-animation"
+                      exit-animation="fade-out-animation">
+            <h4>New value</h4>
+
+            <paper-input value="{{newValue}}" label="Option name" class="add-value-input" id="new-option"
+                         on-keydown="addValueAuto" autofocus></paper-input>
+        </paper-dialog>
+
+        <!-- Voting metadata -->
         <paper-material elevation="0" class="row">
-            <paper-input value="{{name}}" label="Vote name" on-keydown="submit"></paper-input>
+            <paper-input value="{{name}}" label="Vote name" id="name" autofocus></paper-input>
+
+            <paper-dropdown-menu label="Duration" id="duration" placeholder="15 Minutes">
+                <paper-menu class="dropdown-content" selected="2">
+                    <paper-item value="2">2 Minutes</paper-item>
+                    <paper-item value="6">6 Minutes</paper-item>
+                    <paper-item value="15">15 Minutes</paper-item>
+                    <paper-item value="120">2 Hours</paper-item>
+                </paper-menu>
+            </paper-dropdown-menu>
         </paper-material>
 
         <paper-material elevation="1" class="row">
             <paper-input value="{{option}}" label="Option name" id="new-option" on-keydown="addQueryAuto"></paper-input>
 
             <div class="add">
-                <paper-fab mini primary icon="icons:add-box" on-click="addQuery"
-                           title="Log out"></paper-fab>
+                <paper-fab mini primary icon="icons:add-box" on-tap="addQuery"
+                           title="Add another query"></paper-fab>
             </div>
         </paper-material>
 
         <div class="divider"></div>
 
-        <template is="dom-repeat" items="{{options}}" as="option">
+        <!-- List all the questions in the vote -->
+        <template is="dom-repeat" items="{{options}}" as="option" id="optionList">
             <paper-material elevation="1" class="item">
                 <div class="option-title">{{option.name}}</div>
 
-                <div class="add">
-                    <paper-fab mini primary icon="icons:remove" on-click="addQuery"
-                               title="Log out"></paper-fab>
+                <div class="remove">
+                    <paper-fab mini primary icon="icons:remove" on-tap="removeQuery"
+                               title="Remove query"></paper-fab>
                 </div>
 
                 <div class="value">
-                    <paper-button class="" on-tap="addValue">Add value</paper-button>
+                    <paper-button class="" on-tap="addValueDialog">Add value</paper-button>
                 </div>
 
+                <!-- List all possible values for each question. -->
                 <paper-listbox class="value-list">
-                    <template is="dom-repeat" items="{{option.values}}" as="value" index-as="value-id">
+                    <template is="dom-repeat" items="{{option.values}}" as="value" index-as="value_id" id="valueList">
                         <paper-item>
                             {{value}}
                             <div class="value-remove">
-                                <paper-fab mini primary icon="icons:remove" on-click="addQuery"
+                                <paper-fab mini primary icon="icons:remove" on-tap="removeValue"
                                            title="Log out"></paper-fab>
                             </div>
                         </paper-item>
                     </template>
                 </paper-listbox>
 
-                <div class="custom-values">
-                    <paper-checkbox noink>Allow user defined values</paper-checkbox>
-                </div>
             </paper-material>
         </template>
 
-       <div class="divider"></div>
+        <div class="divider"></div>
 
-        <paper-button raised class="primary flex" on-tap="authenticate">Create</paper-button>
+        <!-- Status toasts. -->
+        <paper-toast class="toast-success" id="toast-success" text="The vote was created."></paper-toast>
+        <paper-toast class="toast-error" id="toast-server-denied" text="Server denied the request."></paper-toast>
+
+        <paper-button raised class="primary flex" on-tap="create">Create</paper-button>
         </paper-material>
-
 
     </template>
     <script>
@@ -140,22 +195,36 @@
             is: 'create-voting',
 
             ready: function () {
-                this.options = [{
-                    name: "opt1",
-                    values: ["1", "2", "3"]
-                }, {
-                    name: "opt2",
-                    values: ["a", "b", "c"]
-                }
-                ];
+                this.name = "";
+                this.newValue = "";
+                this.editingOptionIndex = null;
+                this.options = [];
+                var self = this;
+
+                application.onAuthentication(function (authentication) {
+                   self.token = authentication.token;
+                });
             },
 
-            addOption: function () {
+            addValue: function (e) {
+                this.push("options." + this.editingOptionIndex + ".values", this.newValue);
+                this.newValue = "";
+            },
 
+            addValueAuto: function (e) {
+                if (e.keyCode == 13) {
+                    this.addValue(e);
+                    this.$['dialog-value'].toggle();
+                }
+            },
+
+            addValueDialog: function (e) {
+                this.editingOptionIndex = e.model.index;
+                this.$['dialog-value'].toggle();
             },
 
             addQuery: function () {
-                // add the option somehow..
+                this.push('options', {name: this.option, values: []});
                 this.option = "";
             },
 
@@ -164,11 +233,49 @@
                     this.addQuery();
             },
 
-            removeOption: function () {
+            removeValue: function (e) {
+                var optionIndex = this.$.optionList.modelForElement(e.target).index;
+                this.splice('options.' + optionIndex + '.values', e.model.value_id, 1);
             },
 
-            removeQuery: function () {
+            removeQuery: function (e) {
+                this.splice('options', e.model.index, 1);
+            },
+
+            getDurationMS: function () {
+                return this.$.duration.selectedItem.getAttribute("value") * 60 * 1000;
+            },
+
+            create: function () {
+                var self = this;
+
+                $.ajax({
+                    type: "POST",
+                    url: "/api/create",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        vote: {
+                            name: self.name,
+                            duration: self.getDurationMS(),
+                            options: self.options
+                        },
+                        token: self.token
+                    }),
+                    success: function (data) {
+                        self.option = "";
+                        self.name = "";
+                        self.options = [];
+                        self.$['toast-success'].open();
+                    },
+                    error: function (data) {
+                        console.log(data);
+                        self.$['toast-server-denied'].open();
+                        self.password = "";
+                    }
+                });
             }
-        });
+        })
+        ;
     </script>
 </dom-module>

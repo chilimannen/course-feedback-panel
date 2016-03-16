@@ -27,6 +27,15 @@ h3 { font-size: 25px; margin: 15px 0px; }
 
 h4 { font-size: 20px; }
 
+.toast-success {
+    background-color: rgba(0, 255, 0, 0.12);
+}
+
+.toast-error {
+    background-color: rgba(255, 0, 0, 0.12);
+}
+
+
 a, a:active, a:visited, a:focus { color: white; text-decoration: none; }
 
 a:hover { color: white; text-decoration: underline; }

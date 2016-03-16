@@ -1,3 +1,4 @@
+import Configuration.Configuration;
 import Controller.WebServer;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -37,7 +38,7 @@ public class WebServerTest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .getNow(WebServer.WEB_PORT, "localhost", "/404", response -> {
+                .getNow(Configuration.WEB_PORT, "localhost", "/404", response -> {
 
                     context.assertEquals(404, response.statusCode());
 
@@ -57,7 +58,7 @@ public class WebServerTest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .getNow(WebServer.WEB_PORT, "localhost", "/", response -> {
+                .getNow(Configuration.WEB_PORT, "localhost", "/", response -> {
                     context.assertEquals(200, response.statusCode());
                     async.complete();
                 });
@@ -68,7 +69,7 @@ public class WebServerTest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .getNow(WebServer.WEB_PORT, "localhost", "/resources/bower_components/polymer/polymer.html", response -> {
+                .getNow(Configuration.WEB_PORT, "localhost", "/resources/bower_components/polymer/polymer.html", response -> {
                     context.assertEquals(200, response.statusCode());
                     async.complete();
                 });
