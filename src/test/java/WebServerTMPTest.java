@@ -1,5 +1,5 @@
 import Configuration.Configuration;
-import Controller.WebServer_TMP;
+import Controller.WebServer;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -25,7 +25,7 @@ public class WebServerTMPTest {
     @Before
     public void setUp(TestContext context) {
         vertx = Vertx.vertx();
-        vertx.deployVerticle(new WebServer_TMP(new AccountDBMock(), new ControllerClientMock()), context.asyncAssertSuccess());
+        vertx.deployVerticle(new WebServer(new AccountDBMock(), new ControllerClientMock()), context.asyncAssertSuccess());
     }
 
     @After

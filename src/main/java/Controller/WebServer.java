@@ -65,7 +65,7 @@ public class WebServer implements Verticle {
         Router router = Router.router(vertx);
 
         router.route().handler(BodyHandler.create());
-        new APIRouter().register(router, accounts, client, vertx);
+        new APIRouter().register(router, accounts, client);
         setTemplating(router);
         setResources(router);
         setCatchAll(router);

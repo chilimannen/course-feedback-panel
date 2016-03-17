@@ -1,4 +1,4 @@
-import Controller.WebServer_TMP;
+import Controller.WebServer;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -12,7 +12,7 @@ public class Launcher extends AbstractVerticle {
 
     public void start(Future<Void> future) {
         vertx.deployVerticle(
-                WebServer_TMP.class.getName(),
+                WebServer.class.getName(),
                 new DeploymentOptions().setInstances(Runtime.getRuntime().availableProcessors()),
 
                 result -> {
