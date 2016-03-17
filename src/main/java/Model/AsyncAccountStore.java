@@ -8,9 +8,9 @@ import io.vertx.core.Future;
  * Asynchronous account store.
  */
 public interface AsyncAccountStore {
-    void find(String username, Future<Account> future);
+    void find(Future<Account> future, String username);
 
-    void authenticate(Account account, Future<Account> future);
+    void authenticate(Future<Account> future, Account account);
 
-    void register(Account account, Future<Account> future);
+    void register(Future<Account> future, Account account);
 }

@@ -3,6 +3,8 @@ package Controller;
 import Configuration.Configuration;
 import Model.AccountDB;
 import Model.AsyncAccountStore;
+import Model.AsyncControllerClient;
+import Model.ControllerClient;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Verticle;
@@ -25,12 +27,14 @@ import io.vertx.ext.web.templ.JadeTemplateEngine;
  */
 public class WebServer implements Verticle {
     private AsyncAccountStore accounts;
+    private AsyncControllerClient client;
     private Vertx vertx;
 
     public WebServer() {
     }
 
-    public WebServer(AsyncAccountStore accounts) {
+    public WebServer(AsyncAccountStore accounts, AsyncControllerClient client) {
+        this.client = client;
         this.accounts = accounts;
     }
 
@@ -50,6 +54,9 @@ public class WebServer implements Verticle {
                                     .put("connection_string", Configuration.CONNECTION_STRING)
                                     .put("db_name", Configuration.DB_NAME)));
         }
+
+        if (client == null)
+            client = new ControllerClient(vertx);
     }
 
     @Override
@@ -58,7 +65,7 @@ public class WebServer implements Verticle {
         Router router = Router.router(vertx);
 
         router.route().handler(BodyHandler.create());
-        new APIRouter().register(router, accounts, vertx);
+        new APIRouter().register(router, accounts, client, vertx);
         setTemplating(router);
         setResources(router);
         setCatchAll(router);

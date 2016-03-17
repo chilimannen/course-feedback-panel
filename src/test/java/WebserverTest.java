@@ -25,7 +25,7 @@ public class WebServerTest {
     @Before
     public void setUp(TestContext context) {
         vertx = Vertx.vertx();
-        vertx.deployVerticle(new WebServer(new AccountDBMock()), context.asyncAssertSuccess());
+        vertx.deployVerticle(new WebServer(new AccountDBMock(), new ControllerClientMock()), context.asyncAssertSuccess());
     }
 
     @After

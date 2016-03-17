@@ -16,7 +16,7 @@ public class AccountDBMock implements AsyncAccountStore {
     }
 
     @Override
-    public void find(String username, Future<Account> future) {
+    public void find(Future<Account> future, String username) {
         Account account = null;
 
         for (int i = 0; i < accounts.size(); i++) {
@@ -31,7 +31,7 @@ public class AccountDBMock implements AsyncAccountStore {
     }
 
     @Override
-    public void authenticate(Account account, Future<Account> future) {
+    public void authenticate(Future<Account> future, Account account) {
         Future<Account> findFuture = Future.future();
 
         findFuture.setHandler(result -> {
@@ -44,11 +44,11 @@ public class AccountDBMock implements AsyncAccountStore {
                 future.fail(new AccountMissingException());
         });
 
-        find(account.getUsername(), findFuture);
+        find(findFuture, account.getUsername());
     }
 
     @Override
-    public void register(Account account, Future<Account> future) {
+    public void register(Future<Account> future, Account account) {
         Future<Account> findFuture = Future.future();
 
         findFuture.setHandler(result -> {
@@ -60,6 +60,6 @@ public class AccountDBMock implements AsyncAccountStore {
             }
         });
 
-        find(account.getUsername(), findFuture);
+        find(findFuture, account.getUsername());
     }
 }

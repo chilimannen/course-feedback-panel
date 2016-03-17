@@ -19,7 +19,7 @@ public class AccountDB implements AsyncAccountStore {
 
 
     @Override
-    public void find(String username, Future<Account> future) {
+    public void find(Future<Account> future, String username) {
         JsonObject query = new JsonObject().put("username", username);
 
         client.findOne(COLLECTION, query, null, account -> {
@@ -31,7 +31,7 @@ public class AccountDB implements AsyncAccountStore {
     }
 
     @Override
-    public void register(Account registrant, Future<Account> future) {
+    public void register(Future<Account> future, Account registrant) {
         JsonObject query = new JsonObject().put("username", registrant.getUsername());
         JsonObject account = new JsonObject(Serializer.pack(registrant));
 
@@ -57,7 +57,7 @@ public class AccountDB implements AsyncAccountStore {
     }
 
     @Override
-    public void authenticate(Account unauthenticated, Future<Account> future) {
+    public void authenticate(Future<Account> future, Account unauthenticated) {
         JsonObject query = new JsonObject().put("username", unauthenticated.getUsername());
 
         client.findOne(COLLECTION, query, null, result -> {

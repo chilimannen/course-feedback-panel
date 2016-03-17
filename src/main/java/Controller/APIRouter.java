@@ -16,12 +16,14 @@ import io.vertx.ext.web.RoutingContext;
  */
 class APIRouter {
     private AsyncAccountStore accounts;
+    private AsyncControllerClient client;
     private Vertx vertx;
     private TokenFactory clientToken;
     private TokenFactory serverToken;
 
-    public void register(Router router, AsyncAccountStore accounts, Vertx vertx) {
+    public void register(Router router, AsyncAccountStore accounts, AsyncControllerClient client, Vertx vertx) {
         this.accounts = accounts;
+        this.client = client;
         this.vertx = vertx;
 
         clientToken = new TokenFactory(Configuration.CLIENT_SECRET);
@@ -52,7 +54,7 @@ class APIRouter {
                 response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
             }
         });
-        accounts.register(account, future);
+        accounts.register(future, account);
     }
 
     private void authenticate(RoutingContext context) {
@@ -75,7 +77,7 @@ class APIRouter {
                 response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
             }
         });
-        accounts.authenticate(account, future);
+        accounts.authenticate(future, account);
     }
 
     private void sendAuthentication(Account account, RoutingContext context, boolean registered) {
@@ -86,58 +88,69 @@ class APIRouter {
     }
 
     private void create(RoutingContext context) {
-        if (authorized(context)) {
-            JsonObject query = new JsonObject()
-                    .put("token", getServerToken())
-                    .put("voting", context.getBodyAsJson().getJsonObject("vote"));
+        HttpServerResponse response = context.response();
+        Future<Void> future = Future.future();
 
-            vertx.createHttpClient().post(Configuration.CONTROLLER_PORT, "localhost", "/api/create", res -> {
-                context.response().setStatusCode(res.statusCode()).end();
-            }).end(query.encode());
+        if (authorized(context)) {
+            Voting voting = (Voting) Serializer.unpack(context.getBodyAsJson().getJsonObject("voting"), Voting.class);
+            voting.setOwner(tokenFrom(context).getDomain());
+
+            future.setHandler(result -> {
+                if (result.succeeded())
+                    response.setStatusCode(HttpResponseStatus.OK.code()).end();
+                else
+                    response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+            });
+            client.create(future, voting, tokenFrom(context));
         }
     }
 
     private void list(RoutingContext context) {
+        HttpServerResponse response = context.response();
+        Future<VotingList> controller = Future.future();
+
         if (authorized(context)) {
-            JsonObject query = new JsonObject()
-                    .put("token", new JsonObject(Json.encode(getServerToken())))
-                    .put("voting", context.getBodyAsJson().getJsonObject(""));
+            Token token = (Token) Serializer.unpack(context.getBodyAsJson().getJsonObject("token"), Token.class);
+            Future<Account> find = Future.future();
 
-            /**
-             *
-             *
-             *
-             * ------------------------------------------------
-             *
-             *
-             *
-             */
+            find.setHandler(found -> {
 
-            vertx.createHttpClient().post(Configuration.CONTROLLER_PORT, "localhost", "/api/list", res -> {
-                context.response().setStatusCode(res.statusCode()).end();
-            }).end(query.encode());
+                controller.setHandler(result -> {
+                    if (result.succeeded()) {
+                        response.end(Serializer.pack(result.result()));
+                    } else
+                        response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+                });
+
+                client.list(controller, found.result(), tokenFrom(context));
+            });
+            accounts.find(find, token.getDomain());
         }
     }
 
     private void terminate(RoutingContext context) {
-        if (authorized(context)) {
-            JsonObject query = new JsonObject()
-                    .put("token", new JsonObject(Json.encode(getServerToken())))
-                    .put("voting", context.getBodyAsJson().getJsonObject(""));
+        HttpServerResponse response = context.response();
+        Future<Void> future = Future.future();
 
-            vertx.createHttpClient().post(Configuration.CONTROLLER_PORT, "localhost", "/api/terminate", res -> {
-                context.response().setStatusCode(res.statusCode()).end();
-            }).end(query.encode());
+        if (authorized(context)) {
+            Voting voting = (Voting) Serializer.unpack(context.getBodyAsJson().getJsonObject("voting"), Voting.class);
+
+            future.setHandler(result -> {
+                if (result.succeeded())
+                    response.setStatusCode(HttpResponseStatus.OK.code()).end();
+                else
+                    response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+            });
+            client.terminate(future, voting, tokenFrom(context));
         }
     }
 
-    private JsonObject getServerToken() {
-        return new JsonObject(Json.encode(new Token(serverToken, Configuration.SERVER_NAME)));
+    private Token tokenFrom(RoutingContext context) {
+        return (Token) Serializer.unpack(context.getBodyAsJson().getJsonObject("token"), Token.class);
     }
 
     private boolean authorized(RoutingContext context) {
-        boolean authorized = clientToken.verifyToken((Token)
-                Serializer.unpack(context.getBodyAsJson().getJsonObject("token"), Token.class));
+        boolean authorized = clientToken.verifyToken(tokenFrom(context));
 
         if (!authorized) {
             context.response().setStatusCode(HttpResponseStatus.UNAUTHORIZED.code()).end();

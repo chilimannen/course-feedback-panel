@@ -202,7 +202,7 @@
                 var self = this;
 
                 application.onAuthentication(function (authentication) {
-                   self.token = authentication.token;
+                    self.token = authentication.token;
                 });
             },
 
@@ -242,8 +242,13 @@
                 this.splice('options', e.model.index, 1);
             },
 
-            getDurationMS: function () {
-                return this.$.duration.selectedItem.getAttribute("value") * 60 * 1000;
+            getDuration: function () {
+                var seconds = this.$.duration.selectedItem.getAttribute("value") * 60;
+                var begin = Date.now() / 1000;
+                var end = Date.now() / 1000 + seconds;
+
+                return {begin: begin, end: end};
+
             },
 
             create: function () {
@@ -256,8 +261,8 @@
                     contentType: "application/json; charset=utf-8",
                     data: JSON.stringify({
                         vote: {
-                            name: self.name,
-                            duration: self.getDurationMS(),
+                            topic: self.name,
+                            duration: self.getDuration(),
                             options: self.options
                         },
                         token: self.token
