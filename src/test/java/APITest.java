@@ -1,5 +1,5 @@
 import Configuration.Configuration;
-import Controller.WebServer;
+import Controller.WebServer_TMP;
 import Model.*;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
@@ -41,7 +41,7 @@ public class APITest {
     @Before
     public void setUp(TestContext context) {
         vertx = Vertx.vertx();
-        vertx.deployVerticle(new WebServer(new AccountDBMock(), new ControllerClientMock()), context.asyncAssertSuccess());
+        vertx.deployVerticle(new WebServer_TMP(new AccountDBMock(), new ControllerClientMock()), context.asyncAssertSuccess());
         tokenFactory = new TokenFactory(Configuration.CLIENT_SECRET);
     }
 
