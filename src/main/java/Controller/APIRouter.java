@@ -4,10 +4,7 @@ import Configuration.Configuration;
 import Model.*;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
@@ -17,21 +14,17 @@ import io.vertx.ext.web.RoutingContext;
 class APIRouter {
     private AsyncAccountStore accounts;
     private AsyncControllerClient client;
-    private Vertx vertx;
     private TokenFactory clientToken;
-    private TokenFactory serverToken;
 
-    public void register(Router router, AsyncAccountStore accounts, AsyncControllerClient client, Vertx vertx) {
+    public void register(Router router, AsyncAccountStore accounts, AsyncControllerClient client) {
         this.accounts = accounts;
         this.client = client;
-        this.vertx = vertx;
 
         clientToken = new TokenFactory(Configuration.CLIENT_SECRET);
-        serverToken = new TokenFactory(Configuration.SERVER_SECRET);
 
         router.post("/api/register").handler(this::register);
         router.post("/api/authenticate").handler(this::authenticate);
-        router.get("/api/list").handler(this::list);
+        router.post("/api/list").handler(this::list);
         router.post("/api/create").handler(this::create);
         router.post("/api/terminate").handler(this::terminate);
     }

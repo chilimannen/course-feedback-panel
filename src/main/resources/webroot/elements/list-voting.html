@@ -21,36 +21,48 @@
             </paper-material>
         </div>
 
+        <!-- Status toasts. -->
+        <paper-toast class="toast-success" id="toast-success" text="Votings received from server."></paper-toast>
+        <paper-toast class="toast-error" id="toast-server-denied" text="Failed to list votings."></paper-toast>
+
     </template>
     <script>
         Polymer({
             is: 'list-voting',
 
             ready: function () {
-                $.ajax({
-                    type: "GET",
-                    url: "/api/list",
-                    dataType: "json",
-                    contentType: "application/json; charset=utf-8",
-                    data: JSON.stringify({
-                        token: self.token
-                    }),
-                    success: function (data) {
-                        console.log(data);
+                var self = this;
 
-                        self.option = "";
-                        self.name = "";
-                        self.options = [];
-                        self.$['toast-success'].open();
-                    },
-                    error: function (data) {
-                        console.log(data);
+                application.onAuthentication(function (authentication) {
+                    console.log(authentication.token);
 
-                        self.$['toast-server-denied'].open();
-                        self.password = "";
-                    }
+                    $.ajax({
+                        type: "POST",
+                        url: "/api/list",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({token: authentication.token})
+                        ,
+                        success: function (data) {
+                            console.log(data);
+
+                            self.option = "";
+                            self.name = "";
+                            self.options = [];
+                            self.$['toast-success'].open();
+                        }
+
+                        ,
+                        error: function (data) {
+                            console.log(data);
+
+                            self.$['toast-server-denied'].open();
+                            self.password = "";
+                        }
+                    });
                 });
             }
-        });
+        })
+        ;
     </script>
 </dom-module>

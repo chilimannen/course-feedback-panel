@@ -260,7 +260,7 @@
                     dataType: "json",
                     contentType: "application/json; charset=utf-8",
                     data: JSON.stringify({
-                        vote: {
+                        voting: {
                             topic: self.name,
                             duration: self.getDuration(),
                             options: self.options
@@ -274,7 +274,6 @@
                         self.$['toast-success'].open();
                     },
                     error: function (data) {
-                        console.log(data);
                         self.$['toast-server-denied'].open();
                         self.password = "";
                     }

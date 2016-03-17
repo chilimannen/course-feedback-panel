@@ -178,7 +178,7 @@ public class APITest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .get(Configuration.WEB_PORT, "localhost", "/api/list", response -> {
+                .post(Configuration.WEB_PORT, "localhost", "/api/list", response -> {
                     context.assertEquals(HttpResponseStatus.OK.code(), response.statusCode());
 
                     response.bodyHandler(body -> {
@@ -226,7 +226,7 @@ public class APITest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .get(Configuration.WEB_PORT, "localhost", "/api/list", response -> {
+                .post(Configuration.WEB_PORT, "localhost", "/api/terminate", response -> {
                     context.assertEquals(HttpResponseStatus.UNAUTHORIZED.code(), response.statusCode());
                     async.complete();
                 }).end(
@@ -240,7 +240,7 @@ public class APITest {
         Async async = context.async();
 
         vertx.createHttpClient()
-                .post(Configuration.WEB_PORT, "localhost", "/api/terminate", response -> {
+                .post(Configuration.WEB_PORT, "localhost", "/api/list", response -> {
                     context.assertEquals(HttpResponseStatus.UNAUTHORIZED.code(), response.statusCode());
                     async.complete();
                 }).end(

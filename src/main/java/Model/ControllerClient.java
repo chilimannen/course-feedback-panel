@@ -65,7 +65,7 @@ public class ControllerClient implements AsyncControllerClient {
                 future.fail(new ControllerFailureException());
         }).end(
                 new JsonObject()
-                        .put("owner", token)
+                        .put("owner", Serializer.json(token))
                         .put("token", getServerToken())
                         .encode()
         );
