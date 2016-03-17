@@ -10,5 +10,5 @@ public interface AsyncControllerClient {
 
     void terminate(Future<Void> future, Voting voting, Token token);
 
-    void list(Future<VotingList> future, Account account, Token token);
+    void list(Future<VotingList> future, String username);
 }

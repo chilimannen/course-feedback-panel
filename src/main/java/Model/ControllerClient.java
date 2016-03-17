@@ -4,7 +4,6 @@ import Configuration.Configuration;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -52,7 +51,7 @@ public class ControllerClient implements AsyncControllerClient {
     }
 
     @Override
-    public void list(Future<VotingList> future, Account account, Token token) {
+    public void list(Future<VotingList> future, String username) {
         vertx.createHttpClient().post(Configuration.CONTROLLER_PORT, "localhost", "/api/list", result -> {
 
             if (result.statusCode() == HttpResponseStatus.OK.code()) {
@@ -65,7 +64,7 @@ public class ControllerClient implements AsyncControllerClient {
                 future.fail(new ControllerFailureException());
         }).end(
                 new JsonObject()
-                        .put("owner", Serializer.json(token))
+                        .put("owner", username)
                         .put("token", getServerToken())
                         .encode()
         );

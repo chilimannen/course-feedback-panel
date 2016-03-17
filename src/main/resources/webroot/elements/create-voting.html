@@ -244,11 +244,10 @@
 
             getDuration: function () {
                 var seconds = this.$.duration.selectedItem.getAttribute("value") * 60;
-                var begin = Date.now() / 1000;
-                var end = Date.now() / 1000 + seconds;
+                var begin = new Date().getTime() / 1000;
+                var end = new Date().getTime() / 1000 + seconds;
 
                 return {begin: begin, end: end};
-
             },
 
             create: function () {

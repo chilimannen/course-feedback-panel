@@ -7,35 +7,98 @@
         <style>
             :host {
                 display: inline-block;
+                width: 100%;
             }
+
+            paper-toast {
+                position: absolute;
+                right: 0px;
+                bottom: -100px;
+            }
+
+            .item {
+                margin: 6px 12px;
+                height: 200px;
+            }
+
+            .option-title {
+                position: absolute;
+                top: 12px;
+                left: 12px;
+            }
+
+            .remove {
+                position: absolute;
+                right: 16px;
+                top: 8px;
+            }
+
+            .value {
+                position: absolute;
+                bottom: 0px;
+                right: 0;
+                left: 0;
+            }
+
 
         </style>
 
-        <div>
-            <paper-material elevation="0">
-                <p>
-                <h6>
-                    &copy;2016.
-                </h6>
-                </p>
-            </paper-material>
-        </div>
 
-        <!-- Status toasts. -->
-        <paper-toast class="toast-success" id="toast-success" text="Votings received from server."></paper-toast>
-        <paper-toast class="toast-error" id="toast-server-denied" text="Failed to list votings."></paper-toast>
+        <paper-material elevation="0">
+            <!-- List all possible values for each question. -->
+            <template is="dom-repeat" items="{{votings}}">
+                <paper-material elevation="1" class="item">
+                    <div class="option-title">{{item.topic}}</div>
+
+                    <div class="remove">
+                        <paper-fab mini primary icon="icons:remove" on-tap="terminateVote"
+                                   title="Remove query"></paper-fab>
+                    </div>
+
+                    <div class="timer">
+                        TIME IS {{item.timeLeft}}
+                    </div>
+
+                    <div class="value">
+                        <paper-button>Download</paper-button>
+                    </div>
+                </paper-material>
+
+            </template>
+
+            <!-- Status toasts. -->
+            <paper-toast class="toast-success" id="toast-success"
+                         text="Votings received from server."></paper-toast>
+            <paper-toast class="toast-error" id="toast-server-denied" text="Failed to list votings."></paper-toast>
+        </paper-material>
+
 
     </template>
     <script>
         Polymer({
             is: 'list-voting',
 
-            ready: function () {
+            startTimers: function () {
                 var self = this;
 
-                application.onAuthentication(function (authentication) {
-                    console.log(authentication.token);
+                setInterval(function () {
+                    for (var i = 0; i < self.votings.length; i++) {
+                        var time = new Date((self.votings[i].duration.end - new Date().getTime() / 1000) * 1000);
+                        var days = time.getDay();
+                        var hours = time.getHours();
+                        var minutes = time.getMinutes();
+                        var seconds = time.getSeconds();
 
+                        self.set('votings.' + i + '.timeLeft', days + " Days, " + hours + " hours, " + minutes + " minutes, " + seconds + " seconds.");
+                    }
+                }, 1000);
+            },
+
+            ready: function () {
+                var self = this;
+                this.startTimers();
+
+                application.onAuthentication(function (authentication) {
                     $.ajax({
                         type: "POST",
                         url: "/api/list",
@@ -45,17 +108,13 @@
                         ,
                         success: function (data) {
                             console.log(data);
-
+                            self.votings = data.votings;
                             self.option = "";
                             self.name = "";
                             self.options = [];
                             self.$['toast-success'].open();
-                        }
-
-                        ,
+                        },
                         error: function (data) {
-                            console.log(data);
-
                             self.$['toast-server-denied'].open();
                             self.password = "";
                         }

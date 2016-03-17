@@ -60,7 +60,7 @@ public class ControllerClientMock implements AsyncControllerClient {
     }
 
     @Override
-    public void list(Future<VotingList> future, Account account, Token token) {
+    public void list(Future<VotingList> future, String username) {
         if (throwException)
             future.fail(new ControllerFailureException());
         else

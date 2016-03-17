@@ -82,59 +82,53 @@ class APIRouter {
 
     private void create(RoutingContext context) {
         HttpServerResponse response = context.response();
-        Future<Void> future = Future.future();
 
         if (authorized(context)) {
+            Future<Void> controller = Future.future();
             Voting voting = (Voting) Serializer.unpack(context.getBodyAsJson().getJsonObject("voting"), Voting.class);
             voting.setOwner(tokenFrom(context).getDomain());
 
-            future.setHandler(result -> {
+            controller.setHandler(result -> {
                 if (result.succeeded())
                     response.setStatusCode(HttpResponseStatus.OK.code()).end();
                 else
                     response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
             });
-            client.create(future, voting, tokenFrom(context));
+            client.create(controller, voting, tokenFrom(context));
         }
     }
 
     private void list(RoutingContext context) {
         HttpServerResponse response = context.response();
-        Future<VotingList> controller = Future.future();
 
         if (authorized(context)) {
-            Token token = (Token) Serializer.unpack(context.getBodyAsJson().getJsonObject("token"), Token.class);
-            Future<Account> find = Future.future();
+            Future<VotingList> controller = Future.future();
 
-            find.setHandler(found -> {
-
-                controller.setHandler(result -> {
-                    if (result.succeeded()) {
-                        response.end(Serializer.pack(result.result()));
-                    } else
-                        response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
-                });
-
-                client.list(controller, found.result(), tokenFrom(context));
+            controller.setHandler(result -> {
+                if (result.succeeded()) {
+                    response.end(Serializer.pack(result.result()));
+                } else
+                    response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
             });
-            accounts.find(find, token.getDomain());
+
+            client.list(controller, tokenFrom(context).getDomain());
         }
     }
 
     private void terminate(RoutingContext context) {
         HttpServerResponse response = context.response();
-        Future<Void> future = Future.future();
 
         if (authorized(context)) {
+            Future<Void> controller = Future.future();
             Voting voting = (Voting) Serializer.unpack(context.getBodyAsJson().getJsonObject("voting"), Voting.class);
 
-            future.setHandler(result -> {
+            controller.setHandler(result -> {
                 if (result.succeeded())
                     response.setStatusCode(HttpResponseStatus.OK.code()).end();
                 else
                     response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
             });
-            client.terminate(future, voting, tokenFrom(context));
+            client.terminate(controller, voting, tokenFrom(context));
         }
     }
 
