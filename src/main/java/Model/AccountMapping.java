@@ -1,9 +1,9 @@
 package Model;
 
 /**
- * Created by Robin on 2016-03-14.
- * <p/>
- * An account.
+ * @author Robin Duda
+ *
+ * Database object not shared outside storage.
  */
 class AccountMapping {
     private String username;

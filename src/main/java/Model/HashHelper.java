@@ -6,7 +6,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 /**
- * Created by Robin on 2015-09-28.
+ * @author Robin Duda
  * <p/>
  * Handles the hashing of passwords and the generation
  * of the salts used in the hashing.

@@ -1,5 +1,10 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
+<!--
+    @author Robin Duda
+    Polymer element for listing all votes.
+ -->
+
 <dom-module id="list-voting">
     <link rel="import" href="../style/melon.css" type="css">
     <link rel="import" href="../style/style.css" type="css">
@@ -40,6 +45,12 @@
                 left: 0;
             }
 
+            .timer {
+                position: absolute;
+                top: 74px;
+                width: 100%;
+                text-align: center;
+            }
 
         </style>
 
@@ -51,25 +62,34 @@
                     <div class="option-title">{{item.topic}}</div>
 
                     <div class="remove">
-                        <paper-fab mini primary icon="icons:remove" on-tap="terminateVote"
+                        <paper-fab mini primary icon="icons:remove" on-tap="terminate"
                                    title="Remove query"></paper-fab>
                     </div>
 
                     <div class="timer">
-                        TIME IS {{item.timeLeft}}
+                        <h4>{{item.timeLeft}}</h4>
                     </div>
 
                     <div class="value">
-                        <paper-button>Download</paper-button>
+                        <template is="dom-if" if="{{item.complete}}">
+                            <paper-button raised on-tap="download" data-args="{{item.id}}">Download</paper-button>
+                        </template>
+
+                        <template is="dom-if" if="{{item.active}}">
+                            <paper-button on-tap="incomplete">Download</paper-button>
+                        </template>
                     </div>
                 </paper-material>
 
             </template>
 
             <!-- Status toasts. -->
-            <paper-toast class="toast-success" id="toast-success"
+            <paper-toast class="toast-success" id="list-success"
                          text="Votings received from server."></paper-toast>
-            <paper-toast class="toast-error" id="toast-server-denied" text="Failed to list votings."></paper-toast>
+            <paper-toast class="toast-error" id="list-error" text="Failed to list votings."></paper-toast>
+            <paper-toast class="toast-error" id="list-not-ready" text="Download not ready yet."></paper-toast>
+            <paper-toast class="toast-error" id="list-terminate-error" text="Failed to terminate voting."></paper-toast>
+
         </paper-material>
 
 
@@ -82,44 +102,99 @@
                 var self = this;
 
                 setInterval(function () {
-                    for (var i = 0; i < self.votings.length; i++) {
-                        var time = new Date((self.votings[i].duration.end - new Date().getTime() / 1000) * 1000);
-                        var days = time.getDay();
-                        var hours = time.getHours();
-                        var minutes = time.getMinutes();
-                        var seconds = time.getSeconds();
+                    self.updateTimers(self);
+                }, 1000);
+            },
+
+            updateTimers: function (self) {
+                for (var i = 0; i < self.votings.length; i++) {
+                    var time = Math.round((self.votings[i].duration.end - new Date().getTime()) / 1000);
+
+                    if (time > 0) {
+                        var days = Math.floor(time / 86000);
+                        time -= days * 86000;
+
+                        var hours = Math.floor(time / 3600);
+                        time -= hours * 3600;
+
+                        var minutes = Math.floor(time / 60);
+                        time -= minutes * 60;
+
+                        var seconds = Math.floor(time);
 
                         self.set('votings.' + i + '.timeLeft', days + " Days, " + hours + " hours, " + minutes + " minutes, " + seconds + " seconds.");
+                        self.set('votings.' + i + '.complete', false)
+                        self.set('votings.' + i + '.active', true)
+                    } else {
+                        self.set('votings.' + i + '.timeLeft', "");
+                        self.set('votings.' + i + '.complete', true)
+                        self.set('votings.' + i + '.active', false)
                     }
-                }, 1000);
+                }
             },
 
             ready: function () {
                 var self = this;
                 this.startTimers();
+                this.votings = [];
+
+                application.subscribe('vote-created', function () {
+                    self.load(self);
+                });
 
                 application.onAuthentication(function (authentication) {
-                    $.ajax({
-                        type: "POST",
-                        url: "/api/list",
-                        dataType: "json",
-                        contentType: "application/json; charset=utf-8",
-                        data: JSON.stringify({token: authentication.token})
-                        ,
-                        success: function (data) {
-                            console.log(data);
-                            self.votings = data.votings;
-                            self.option = "";
-                            self.name = "";
-                            self.options = [];
-                            self.$['toast-success'].open();
-                        },
-                        error: function (data) {
-                            self.$['toast-server-denied'].open();
-                            self.password = "";
-                        }
-                    });
+                    self.authentication = authentication;
+                    self.load(self);
                 });
+            },
+
+            load: function (self) {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/list",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({token: self.authentication.token}),
+
+                    success: function (data) {
+                        self.set("votings", data.votings);
+                        self.updateTimers(self);
+                    },
+                    error: function (data) {
+                        self.$['list-error'].open();
+                    }
+                });
+            },
+
+            terminate: function (e) {
+                var self = this;
+
+                $.ajax({
+                    type: "POST",
+                    url: "/api/terminate",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(
+                            {
+                                token: this.authentication.token,
+                                voting: {id: e.model.item.id}
+                            }
+                    ),
+                    success: function (data) {
+                        self.load(self);
+                    },
+                    error: function (data) {
+                        self.$['list-terminate-error'].open();
+                    }
+                });
+            },
+
+            download: function (e) {
+                console.log(e);
+                window.location.href = "/v1/" + e.model.item.id + "/dump";
+            },
+
+            incomplete: function () {
+                this.$['list-not-ready'].open();
             }
         })
         ;

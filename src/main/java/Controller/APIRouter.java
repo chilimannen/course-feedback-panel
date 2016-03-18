@@ -9,13 +9,22 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * @Author Robin Duda
+ * @author Robin Duda
+ *         <p/>
+ *         Router for the view-api.
  */
 class APIRouter {
     private AsyncAccountStore accounts;
     private AsyncControllerClient client;
     private TokenFactory clientToken;
 
+    /**
+     * Register all existing API routes onto the router.
+     *
+     * @param router   the router which the routes should be registered to.
+     * @param accounts the account storage.
+     * @param client   a client used to connect to the controller.
+     */
     public void register(Router router, AsyncAccountStore accounts, AsyncControllerClient client) {
         this.accounts = accounts;
         this.client = client;
@@ -89,12 +98,13 @@ class APIRouter {
             voting.setOwner(tokenFrom(context).getDomain());
 
             controller.setHandler(result -> {
-                if (result.succeeded())
+                if (result.succeeded()) {
                     response.setStatusCode(HttpResponseStatus.OK.code()).end();
-                else
+                } else {
                     response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
+                }
             });
-            client.create(controller, voting, tokenFrom(context));
+            client.create(controller, voting);
         }
     }
 
@@ -121,6 +131,7 @@ class APIRouter {
         if (authorized(context)) {
             Future<Void> controller = Future.future();
             Voting voting = (Voting) Serializer.unpack(context.getBodyAsJson().getJsonObject("voting"), Voting.class);
+            voting.setOwner(tokenFrom(context).getDomain());
 
             controller.setHandler(result -> {
                 if (result.succeeded())
@@ -128,7 +139,7 @@ class APIRouter {
                 else
                     response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).end();
             });
-            client.terminate(controller, voting, tokenFrom(context));
+            client.terminate(controller, voting);
         }
     }
 

@@ -7,7 +7,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Created by Robin on 2016-03-17.
+ * @author Robin Duda
+ *
+ * A client for communicating with the controller.
  */
 public class ControllerClient implements AsyncControllerClient {
     private Vertx vertx;
@@ -18,7 +20,7 @@ public class ControllerClient implements AsyncControllerClient {
     }
 
     @Override
-    public void create(Future<Void> future, Voting voting, Token token) {
+    public void create(Future<Void> future, Voting voting) {
         vertx.createHttpClient().post(Configuration.CONTROLLER_PORT, "localhost", "/api/create", result -> {
 
             if (result.statusCode() == HttpResponseStatus.OK.code()) {
@@ -34,7 +36,7 @@ public class ControllerClient implements AsyncControllerClient {
     }
 
     @Override
-    public void terminate(Future<Void> future, Voting voting, Token token) {
+    public void terminate(Future<Void> future, Voting voting) {
         vertx.createHttpClient().post(Configuration.CONTROLLER_PORT, "localhost", "/api/terminate", result -> {
 
             if (result.statusCode() == HttpResponseStatus.OK.code()) {
@@ -45,7 +47,7 @@ public class ControllerClient implements AsyncControllerClient {
                 new JsonObject()
                         .put("voting", Serializer.json(voting))
                         .put("token", getServerToken())
-                        .put("owner", token.getDomain())
+                        .put("owner", voting.getOwner())
                         .encode()
         );
     }

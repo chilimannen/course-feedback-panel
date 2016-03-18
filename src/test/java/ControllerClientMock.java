@@ -4,7 +4,9 @@ import io.vertx.core.Future;
 import java.util.ArrayList;
 
 /**
- * Created by Robin on 2016-03-17.
+ * @author Robin Duda
+ *
+ * Mock for the controller service.
  */
 public class ControllerClientMock implements AsyncControllerClient {
     private VotingList votings = new VotingList();
@@ -43,7 +45,7 @@ public class ControllerClientMock implements AsyncControllerClient {
     }
 
     @Override
-    public void create(Future<Void> future, Voting voting, Token token) {
+    public void create(Future<Void> future, Voting voting) {
         if (throwException)
             future.fail(new ControllerFailureException());
         else
@@ -51,7 +53,7 @@ public class ControllerClientMock implements AsyncControllerClient {
     }
 
     @Override
-    public void terminate(Future<Void> future, Voting voting, Token token) {
+    public void terminate(Future<Void> future, Voting voting) {
         if (throwException)
             future.fail(new ControllerFailureException());
         else {

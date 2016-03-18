@@ -3,7 +3,9 @@ package Model;
 import java.util.ArrayList;
 
 /**
- * Created by Robin on 2016-03-17.
+ * @author Robin Duda
+ *
+ * A voting object for communicating with the view.
  */
 public class Voting {
     private String owner;

@@ -4,9 +4,9 @@ import io.vertx.core.Future;
 import java.util.ArrayList;
 
 /**
- * Created by Robin on 2016-03-14.
+ * @author Robin Duda
  * <p/>
- * DA mock class
+ * Accountstore mock class.
  */
 public class AccountDBMock implements AsyncAccountStore {
     private ArrayList<Account> accounts = new ArrayList<>();

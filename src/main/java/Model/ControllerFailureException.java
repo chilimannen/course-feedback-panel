@@ -1,7 +1,9 @@
 package Model;
 
 /**
- * Created by Robin on 2016-03-17.
+ * @author Robin Duda
+ *
+ * Thrown when the controller has failed in some way.
  */
 public class ControllerFailureException extends Throwable {
 }

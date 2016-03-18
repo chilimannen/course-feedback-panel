@@ -14,9 +14,11 @@ import org.junit.runner.RunWith;
 
 /**
  * @author Robin Duda
+ *
+ * Test the webserver servs.
  */
 @RunWith(VertxUnitRunner.class)
-public class WebServerTMPTest {
+public class WebServerTest {
     private Vertx vertx;
 
     @Rule

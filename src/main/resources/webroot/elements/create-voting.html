@@ -13,6 +13,10 @@
 <link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 
+<!--
+    @author Robin Duda
+    Polymer element for creating new votes.
+ -->
 
 <dom-module id="create-voting">
     <link rel="import" href="../style/melon.css" type="css">
@@ -183,8 +187,8 @@
         <div class="divider"></div>
 
         <!-- Status toasts. -->
-        <paper-toast class="toast-success" id="toast-success" text="The vote was created."></paper-toast>
-        <paper-toast class="toast-error" id="toast-server-denied" text="Server denied the request."></paper-toast>
+        <paper-toast class="toast-success" id="create-success" text="The vote was created."></paper-toast>
+        <paper-toast class="toast-error" id="create-server-denied" text="Server failed to create voting."></paper-toast>
 
         <paper-button raised class="primary flex" on-tap="create">Create</paper-button>
         </paper-material>
@@ -244,8 +248,8 @@
 
             getDuration: function () {
                 var seconds = this.$.duration.selectedItem.getAttribute("value") * 60;
-                var begin = new Date().getTime() / 1000;
-                var end = new Date().getTime() / 1000 + seconds;
+                var begin = new Date().getTime();
+                var end = new Date().getTime() + seconds * 1000;
 
                 return {begin: begin, end: end};
             },
@@ -256,7 +260,6 @@
                 $.ajax({
                     type: "POST",
                     url: "/api/create",
-                    dataType: "json",
                     contentType: "application/json; charset=utf-8",
                     data: JSON.stringify({
                         voting: {
@@ -270,11 +273,11 @@
                         self.option = "";
                         self.name = "";
                         self.options = [];
-                        self.$['toast-success'].open();
+                        application.publish('vote-created');
+                        self.$['create-success'].open();
                     },
                     error: function (data) {
-                        self.$['toast-server-denied'].open();
-                        self.password = "";
+                        self.$['create-server-denied'].open();
                     }
                 });
             }

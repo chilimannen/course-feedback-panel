@@ -1,5 +1,7 @@
 /**
  * @author Robin Duda
+ *
+ * Used to pass application-level events between components.
  */
 
 

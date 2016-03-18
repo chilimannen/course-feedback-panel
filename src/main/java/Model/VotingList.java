@@ -3,7 +3,9 @@ package Model;
 import java.util.ArrayList;
 
 /**
- * Created by Robin on 2016-03-17.
+ * @author Robin Duda
+ * <p/>
+ * Contains a list of votings for use in transit.
  */
 public class VotingList {
     private ArrayList<Voting> votings = new ArrayList<>();

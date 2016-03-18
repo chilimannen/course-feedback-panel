@@ -5,7 +5,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 
 /**
- * Created by Robin on 2016-03-14.
+ * @author Robin Duda
  * <p/>
  * Implementation of asynchronous account store.
  */

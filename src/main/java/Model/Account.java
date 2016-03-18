@@ -1,7 +1,9 @@
 package Model;
 
 /**
- * Created by Robin on 2016-03-16.
+ * @author Robin Duda
+ *
+ * Holds account data for an user used to communicate with the view.
  */
 public class Account {
     private String username;

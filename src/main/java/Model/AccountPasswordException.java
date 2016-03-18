@@ -1,7 +1,7 @@
 package Model;
 
 /**
- * Created by Robin on 2016-03-14.
+ * @author Robin Duda
  *
  * Throw when authentication fails.
  */

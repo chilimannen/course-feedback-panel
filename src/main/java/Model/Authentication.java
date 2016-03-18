@@ -2,6 +2,8 @@ package Model;
 
 /**
  * @author Robin Duda
+ *
+ * An authentication message from the server to the view.
  */
 public class Authentication {
     private Token token;

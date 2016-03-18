@@ -1,9 +1,9 @@
 package Configuration;
 
 /**
- * Created by Robin on 2016-03-16.
+ * @author Robin Duda
  *
- *
+ * Configuration file for the application.
  */
 public class Configuration {
     public static final int CONTROLLER_PORT = 6464;
