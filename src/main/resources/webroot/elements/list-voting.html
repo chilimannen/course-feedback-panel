@@ -52,6 +52,13 @@
                 text-align: center;
             }
 
+            .id {
+                position: absolute;
+                top: 106px;
+                width: 100%;
+                text-align: center;
+            }
+
         </style>
 
 
@@ -70,13 +77,17 @@
                         <h4>{{item.timeLeft}}</h4>
                     </div>
 
+                    <div class="id">
+                        <h6>{{item.id}}</h6>
+                    </div>
+
                     <div class="value">
                         <template is="dom-if" if="{{item.complete}}">
-                            <paper-button raised on-tap="download" data-args="{{item.id}}">Download</paper-button>
+                            <paper-button raised on-tap="view" data-args="{{item.id}}">VIEW</paper-button>
                         </template>
 
                         <template is="dom-if" if="{{item.active}}">
-                            <paper-button on-tap="incomplete">Download</paper-button>
+                            <paper-button on-tap="vote">VOTE</paper-button>
                         </template>
                     </div>
                 </paper-material>
@@ -84,10 +95,9 @@
             </template>
 
             <!-- Status toasts. -->
-            <paper-toast class="toast-success" id="list-success"
-                         text="Votings received from server."></paper-toast>
             <paper-toast class="toast-error" id="list-error" text="Failed to list votings."></paper-toast>
-            <paper-toast class="toast-error" id="list-not-ready" text="Download not ready yet."></paper-toast>
+            <paper-toast class="toast-success" id="list-synchronizing"
+                         text="Waiting for master to synchronize."></paper-toast>
             <paper-toast class="toast-error" id="list-terminate-error" text="Failed to terminate voting."></paper-toast>
 
         </paper-material>
@@ -125,10 +135,18 @@
                         self.set('votings.' + i + '.timeLeft', days + " Days, " + hours + " hours, " + minutes + " minutes, " + seconds + " seconds.");
                         self.set('votings.' + i + '.complete', false)
                         self.set('votings.' + i + '.active', true)
+                    } else if (time > -5 && time <= 0) {
+                        if (time == 0)
+                            self.$['list-synchronizing'].open();
+
+                        self.set('votings.' + i + '.timeLeft', 'Synchronizing... (' + (5 + time) + ')');
+                        self.set('votings.' + i + '.synchronizing', true)
+                        self.set('votings.' + i + '.active', false)
                     } else {
+                        self.set('votings.' + i + '.synchronizing', false)
                         self.set('votings.' + i + '.timeLeft', "");
                         self.set('votings.' + i + '.complete', true)
-                        self.set('votings.' + i + '.active', false)
+                        self.set('votings.' + i + '.timeLeft', "Complete");
                     }
                 }
             },
@@ -146,7 +164,8 @@
                     self.authentication = authentication;
                     self.load(self);
                 });
-            },
+            }
+            ,
 
             load: function (self) {
                 $.ajax({
@@ -164,7 +183,8 @@
                         self.$['list-error'].open();
                     }
                 });
-            },
+            }
+            ,
 
             terminate: function (e) {
                 var self = this;
@@ -186,15 +206,16 @@
                         self.$['list-terminate-error'].open();
                     }
                 });
-            },
+            }
+            ,
 
-            download: function (e) {
-                console.log(e);
-                window.location.href = "/v1/" + e.model.item.id + "/dump";
-            },
+            vote: function (e) {
+                window.location.href = "http://localhost:9450/";
+            }
+            ,
 
-            incomplete: function () {
-                this.$['list-not-ready'].open();
+            view: function (e) {
+                window.location.href = "http://localhost:7670/";
             }
         })
         ;

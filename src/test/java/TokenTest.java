@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Created by Robin on 2016-03-14.
+ * @author Robin Duda
  *
  * Test token authentication.
  */

@@ -128,10 +128,11 @@
 
             <paper-dropdown-menu label="Duration" id="duration" placeholder="15 Minutes">
                 <paper-menu class="dropdown-content" selected="2">
-                    <paper-item value="2">2 Minutes</paper-item>
-                    <paper-item value="6">6 Minutes</paper-item>
-                    <paper-item value="15">15 Minutes</paper-item>
-                    <paper-item value="120">2 Hours</paper-item>
+                    <paper-item value="30">30 Seconds</paper-item>
+                    <paper-item value="120">2 Minutes</paper-item>
+                    <paper-item value="300">5 Minutes</paper-item>
+                    <paper-item value="900">15 Minutes</paper-item>
+                    <paper-item value="7200">2 Hours</paper-item>
                 </paper-menu>
             </paper-dropdown-menu>
         </paper-material>
@@ -240,7 +241,7 @@
             },
 
             getDuration: function () {
-                var seconds = this.$.duration.selectedItem.getAttribute("value") * 60;
+                var seconds = this.$.duration.selectedItem.getAttribute("value");
                 var begin = new Date().getTime();
                 var end = new Date().getTime() + seconds * 1000;
 
@@ -249,6 +250,15 @@
 
             create: function () {
                 var self = this;
+
+                console.log(JSON.stringify({
+                    voting: {
+                        topic: self.name,
+                        duration: self.getDuration(),
+                        options: self.options
+                    },
+                    token: self.token
+                }));
 
                 $.ajax({
                     type: "POST",
