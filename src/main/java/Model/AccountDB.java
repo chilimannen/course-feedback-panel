@@ -33,14 +33,14 @@ public class AccountDB implements AsyncAccountStore {
     @Override
     public void register(Future<Account> future, Account registrant) {
         JsonObject query = new JsonObject().put("username", registrant.getUsername());
-        JsonObject account = new JsonObject(Serializer.pack(registrant));
+        JsonObject account = new JsonObject(Serializer.pack(new AccountMapping(registrant)));
 
         client.findOne(COLLECTION, query, null, search -> {
 
             if (search.succeeded() && search.result() == null) {
                 String salt = HashHelper.generateSalt();
                 account.put("salt", salt);
-                account.put("hash", HashHelper.hash(account.getString("password"), salt));
+                account.put("hash", HashHelper.hash(registrant.getPassword(), salt));
 
                 client.save(COLLECTION, account, result -> {
                     if (result.succeeded()) {

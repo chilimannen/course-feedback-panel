@@ -87,7 +87,7 @@
                         </template>
 
                         <template is="dom-if" if="{{item.active}}">
-                            <paper-button on-tap="vote">VOTE</paper-button>
+                            <paper-button on-tap="vote" data-args="{{item.id}}">VOTE</paper-button>
                         </template>
                     </div>
                 </paper-material>
@@ -210,12 +210,12 @@
             ,
 
             vote: function (e) {
-                window.location.href = "http://localhost:9450/";
+                window.location.href = "http://localhost:9450/?id=" + e.model.item.id + "&user=" + application.authentication.account.username;
             }
             ,
 
             view: function (e) {
-                window.location.href = "http://localhost:7670/";
+                window.location.href = "http://localhost:7670/?id=" + e.model.item.id;
             }
         })
         ;

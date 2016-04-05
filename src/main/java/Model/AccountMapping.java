@@ -2,8 +2,8 @@ package Model;
 
 /**
  * @author Robin Duda
- *
- * Database object not shared outside storage.
+ *         <p/>
+ *         Database object not shared outside storage.
  */
 class AccountMapping {
     private String username;
@@ -13,6 +13,17 @@ class AccountMapping {
     private String email;
     private String salt;
     private String hash;
+
+    public AccountMapping() {
+    }
+
+    public AccountMapping(Account account) {
+        this.username = account.getUsername();
+        this.firstname = account.getFirstname();
+        this.lastname = account.getLastname();
+        this.phone = account.getPhone();
+        this.email = account.getEmail();
+    }
 
 
     public String getSalt() {
